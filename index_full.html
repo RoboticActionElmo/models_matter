@@ -1,0 +1,2314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Models Matter — Physical Interaction Effects and Model Structure for Contact-Rich Manipulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#10151C; --steel:#5B6B7C; --line:#DCE3EA;
+    --paper:#FFFFFF; --panel:#F2F5F8; --tum:#0065BD;
+    --violet:#9AA0E0; --rose:#F2AFC0;
+    --violet-hot:#5F6BD6; --rose-hot:#E86E96;
+    --ph-bg:#F6F8FA; --ph-line:#B9C4CF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Source Serif 4",Georgia,serif;color:var(--ink);background:var(--paper);
+       line-height:1.6;font-size:17px}
+  .wrap{max-width:1320px;margin:0 auto;padding:56px 24px 80px}
+  .sec-label{font-family:"IBM Plex Mono",monospace;font-size:12.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--tum);margin-bottom:10px}
+  h2{font-family:"Space Grotesk",sans-serif;font-size:clamp(24px,3.2vw,34px);
+     font-weight:700;letter-spacing:-.01em;margin-bottom:10px}
+  .intro{max-width:100%;color:#232B34}
+  .hint{display:inline-flex;align-items:center;gap:8px;margin-top:16px;
+    font-family:"IBM Plex Mono",monospace;font-size:12.5px;letter-spacing:.06em;
+    color:var(--steel);border:1px dashed var(--line);border-radius:999px;padding:7px 16px}
+  .hint .dot{width:8px;height:8px;border-radius:50%;background:var(--tum);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.5}}
+
+  /* ================= Panel (a) ================= */
+  #panelA{margin-top:34px}
+  .wedge{height:54px;border-radius:6px 6px 0 0;
+    background:linear-gradient(90deg,#B03030 0%,#8A6A20 35%,#5E8A28 70%,#2FA02F 100%);
+    clip-path:polygon(0 100%,100% 0,100% 100%)}
+  .wedge-title{text-align:center;font-family:"Space Grotesk",sans-serif;font-weight:700;
+    font-size:22px;margin-bottom:6px}
+  .lvl-row{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-top:10px;
+    align-items:stretch}
+  .lvl-card{border:1.5px solid var(--line);border-radius:8px;background:#fff;
+    padding:11px 9px;display:flex;flex-direction:column;
+    transition:border-color .2s,box-shadow .2s,opacity .2s,transform .2s}
+  .lvl-card .lv{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;
+    color:var(--steel);height:16px}
+  .lvl-card .lv b{color:var(--tum);font-weight:500;font-size:14px}
+  .lvl-card h4{font-family:"Space Grotesk",sans-serif;font-size:12.5px;font-weight:700;
+    line-height:1.18;margin:2px 0 4px;height:45px;overflow:hidden}
+  .imgph{height:64px;border:1.5px dashed var(--ph-line);border-radius:6px;background:var(--ph-bg);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    color:var(--ph-line);margin-bottom:8px;overflow:hidden;flex:none}
+  .imgph svg{width:20px;height:20px;stroke:var(--ph-line);fill:none;stroke-width:1.6}
+  .imgph span{font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.1em}
+  .imgph img{height:100%;width:auto;max-width:100%;object-fit:contain;display:block;margin:0 auto}
+  .imgph .imgfb{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+    color:var(--ph-line);font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.1em}
+  .lvl-card .model{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:#33404E;
+    line-height:1.7;border-top:1px dashed var(--line);padding-top:6px;min-height:44px}
+  .lvl-card .note{margin-top:8px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+    color:#A33;line-height:1.5}
+  .lvl-card .note.gray{color:var(--steel)}
+
+  /* margin-top:auto pushes every bar block to the bottom of its card, so all
+     columns line up on one baseline regardless of how tall the text above is */
+  .bars{display:flex;gap:9px;margin-top:auto;padding-top:10px;border-top:1px dashed var(--line)}
+  .grp{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+  .pair{display:flex;align-items:flex-end;justify-content:center;gap:3px;height:46px}
+  .bar{width:14px;border-radius:2px 2px 0 0}
+  .bar.sr{background:var(--violet-hot)}
+  .bar.pf{background:var(--rose-hot)}
+  .bar.na{background:var(--line)}
+  .nums{display:flex;gap:3px;font-family:"IBM Plex Mono",monospace;font-size:8.5px;color:#33404E}
+  .nums span{width:31px;text-align:center}
+  .grp .dom{font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.06em;color:var(--steel)}
+  #panelA.linked .lvl-card{opacity:.4}
+  #panelA.linked .lvl-card.hot{opacity:1;border-color:var(--tum);transform:translateY(-3px);
+    box-shadow:0 8px 22px rgba(0,101,189,.18)}
+  @media(max-width:960px){.lvl-row{grid-template-columns:repeat(4,1fr)}}
+  @media(max-width:620px){.lvl-row{grid-template-columns:repeat(2,1fr)}}
+
+  /* ================= Figure blocks ================= */
+  #figure{position:relative;margin-top:26px}
+  #stage{position:relative;background:linear-gradient(180deg,#FBFCFE,#F5F8FB);
+    border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  #stage svg{display:block;width:100%;height:auto}
+  svg text{font-family:"Space Grotesk",sans-serif;fill:var(--ink)}
+  svg .mono-t{font-family:"IBM Plex Mono",monospace}
+
+  .bridge{position:relative;height:78px}
+  .stem{position:absolute;top:-1px;bottom:-1px;display:flex}
+  .stem .lane{flex:1;transition:background .28s ease}
+  .stem .rose{background:var(--rose)}
+  .stem .violet{background:var(--violet)}
+  .stem .line{position:absolute;left:50%;top:0;bottom:0;width:2.4px;
+    background:var(--ink);transform:translateX(-50%)}
+  .stemHead{position:absolute;bottom:-4px;transform:translateX(-50%);z-index:2}
+  #figure.tip .stem .rose{background:var(--rose-hot)}
+  #figure.tip .stem .violet{background:var(--violet-hot)}
+
+  .ribbon{transition:opacity .25s ease}
+  #stage.linked .ribbon{opacity:.3}
+  .ribbon-hot{opacity:0;transition:opacity .28s ease}
+  .ribbon-hot.on{opacity:1}
+  .centerline{fill:none;stroke:var(--ink);stroke-width:2.4}
+  .chev{opacity:0;transition:opacity .6s ease}
+  #stage.active .chev{opacity:1;transition-delay:1.2s}
+
+  .seg-field{fill:transparent;cursor:pointer}
+  .seg-glow{fill:var(--tum);opacity:0;transition:opacity .2s ease;pointer-events:none}
+  .seg.hot .seg-glow{opacity:.07}
+
+  .node{opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .5s ease;
+    pointer-events:none}
+  #stage.active .node{opacity:1;transform:none}
+  .node .dot{fill:var(--ink);transition:fill .15s ease}
+  .node .icon{transition:transform .2s ease;transform-box:fill-box;transform-origin:center}
+  .node .lbl{font-size:40px;font-weight:600;transition:fill .15s ease;
+    paint-order:stroke;stroke:#F7FAFC;stroke-width:9px;stroke-linejoin:round}
+  .seg.hot .node .dot{fill:var(--tum)}
+  .seg.hot .node .lbl{fill:var(--tum)}
+  .seg.hot .node .icon{transform:scale(1.08)}
+
+  .lvl-pill{opacity:0;transition:opacity .5s ease;pointer-events:none}
+  #stage.active .lvl-pill{opacity:1}
+  .lvl-pill .ring{transition:stroke .18s ease,stroke-width .18s ease}
+  .lvl-pill.hot .ring{stroke:var(--tum);stroke-width:5}
+  .lvl-pill .num{font-size:56px;font-weight:700;fill:var(--tum)}
+  .lvl-pill .cap{font-size:28px;letter-spacing:.1em;fill:var(--steel);
+    paint-order:stroke;stroke:#F7FAFC;stroke-width:7px}
+
+  .svg-ph{fill:var(--ph-bg);stroke:var(--ph-line);stroke-width:1.8;stroke-dasharray:6 5}
+  .svg-ph-lbl{font-family:"IBM Plex Mono",monospace;font-size:40px;fill:#5B6B7C}
+
+  @media (prefers-reduced-motion:reduce){
+    .hint .dot{animation:none}
+    .node,.chev,.lvl-pill{transition:none!important;opacity:1!important;transform:none!important}
+  }
+
+  /* ================= Video card stack (panel b) ================= */
+  #cards{position:absolute;z-index:30;display:flex;flex-direction:column;gap:10px;
+    opacity:0;pointer-events:none;transform:translateY(6px);
+    transition:opacity .18s ease,transform .18s ease}
+  #cards.show{opacity:1;pointer-events:auto;transform:none}
+  #cards.rowed{flex-direction:row}
+  .vcard{width:246px;background:#fff;border:1.5px solid var(--ink);border-radius:9px;
+    box-shadow:0 12px 30px rgba(16,21,28,.16);overflow:hidden;flex:none}
+  .vcard .vid{aspect-ratio:16/9;background:var(--ink);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:6px;color:#8DA3B8;
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em}
+  .vcard .vid video{width:100%;height:100%;object-fit:cover}
+  .vcard .body{padding:9px 12px 11px}
+  .vcard .row1{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .vcard h3{font-family:"Space Grotesk",sans-serif;font-size:14.5px;font-weight:700}
+  .vcard .lvl{flex:none;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em;
+    padding:2px 8px;border-radius:999px;color:#fff;background:var(--tum)}
+  .vcard .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+  .vcard .tag{font-family:"IBM Plex Mono",monospace;font-size:10px;border:1px solid var(--line);
+    border-radius:999px;padding:2px 7px;color:#33404E;background:var(--panel)}
+  .play{width:32px;height:32px;border-radius:50%;border:1.5px solid #8DA3B8;
+    display:flex;align-items:center;justify-content:center}
+  .play svg{width:12px;height:12px;fill:#8DA3B8;margin-left:2px}
+  .vidfb{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:6px;background:var(--ink);color:#8DA3B8;
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em}
+
+  /* ================= Panel (c) ================= */
+  #panelCWrap{position:relative;background:linear-gradient(180deg,#FBFCFE,#F5F8FB);
+    border:1px solid var(--line);border-radius:12px;padding:22px 26px 26px}
+  #figure.tip #panelCWrap{border-color:var(--tum);box-shadow:0 10px 26px rgba(0,101,189,.13)}
+  .c-head{display:flex;align-items:baseline;gap:14px;margin-bottom:14px}
+  .c-head .tag{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--tum)}
+  .c-head h3{font-family:"Space Grotesk",sans-serif;font-size:21px;font-weight:700}
+  .c-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .c-card{background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:14px;
+    display:flex;flex-direction:column;cursor:pointer;
+    transition:border-color .2s,box-shadow .2s,transform .2s}
+  .c-card:hover{border-color:var(--tum);transform:translateY(-3px);
+    box-shadow:0 10px 24px rgba(0,101,189,.16)}
+  .c-card h4{font-family:"Space Grotesk",sans-serif;font-size:15.5px;font-weight:700;
+    height:21px;margin-bottom:6px}
+  .c-vid{aspect-ratio:16/9;background:var(--ink);border-radius:6px;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    color:#8DA3B8;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em;
+    margin-bottom:10px}
+  .c-vid video{width:100%;height:100%;object-fit:cover}
+  .c-card .model{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#33404E;
+    line-height:1.7;border-top:1px dashed var(--line);padding-top:7px;min-height:40px}
+
+  #cPop,#dPop,#indPop{position:absolute;z-index:60;bottom:calc(100% + 10px);width:780px;max-width:92%;
+    background:#fff;border:1.5px solid var(--ink);border-radius:10px;overflow:hidden;
+    box-shadow:0 18px 44px rgba(16,21,28,.22);
+    opacity:0;pointer-events:none;transform:translateY(8px);
+    transition:opacity .18s ease,transform .18s ease}
+  #cPop.show,#dPop.show,#indPop.show{opacity:1;transform:none}
+  #cPop .big,#dPop .big,#indPop .big{aspect-ratio:16/9;background:var(--ink);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:8px;color:#8DA3B8;
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em}
+  #cPop .big video,#dPop .big video,#indPop .big video{width:100%;height:100%;object-fit:cover}
+  #cPop .cap,#dPop .cap,#indPop .cap{padding:10px 14px;font-family:"Space Grotesk",sans-serif;font-weight:700;
+    font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  #cPop .cap em,#dPop .cap em,#indPop .cap em{font-family:"IBM Plex Mono",monospace;font-style:normal;font-size:11.5px;
+    font-weight:400;color:var(--steel)}
+
+  /* ================= Panel (d) ================= */
+  #panelDWrap{position:relative;background:linear-gradient(180deg,#FBFCFE,#F2F5F8);
+    border:1px solid var(--line);border-radius:12px;padding:22px 26px 26px}
+  .d-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .d-card{background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:14px;
+    display:flex;flex-direction:column;cursor:pointer;
+    transition:border-color .2s,box-shadow .2s,transform .2s}
+  .d-card:hover{border-color:var(--tum);transform:translateY(-3px);
+    box-shadow:0 10px 24px rgba(0,101,189,.16)}
+  .d-card h4{font-family:"Space Grotesk",sans-serif;font-size:15px;font-weight:700;
+    height:21px;margin-bottom:6px}
+  .d-card .sub{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.06em;
+    color:var(--steel);margin-bottom:8px}
+  .d-perf{margin-top:auto;padding-top:10px;border-top:1px dashed var(--line);
+    display:flex;gap:12px}
+  .d-perf .m{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+  .d-perf .val{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:21px}
+  .d-perf .val.sr{color:var(--violet-hot)}
+  .d-perf .val.pf{color:var(--rose-hot)}
+  .d-perf .k{font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.05em;
+    color:var(--steel);text-align:center;line-height:1.3}
+
+  /* ================= Page scaffold (dummy sections) ================= */
+  .band{padding:64px 0;border-top:1px solid var(--line)}
+  .band.tint{background:var(--panel)}
+  .band .wrap{padding-top:0;padding-bottom:0}
+  .lead{font-size:19.5px;max-width:100%;color:#232B34}
+  .prose{max-width:100%}
+  .prose p+p{margin-top:15px}
+  /* ---- S2 model-knowledge layers table ---- */
+  .mktbl{width:100%;border-collapse:collapse;margin-top:22px;font-size:14px;
+    background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .mktbl thead th{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--steel);text-align:left;padding:14px 18px;
+    border-bottom:1.5px solid var(--line);font-weight:600;background:var(--panel)}
+  .mktbl td{padding:16px 18px;vertical-align:top;border-bottom:1px solid var(--line);
+    line-height:1.5;color:var(--ink)}
+  .mktbl tbody tr:last-child td{border-bottom:none}
+  .mktbl .layer{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:15px;
+    display:flex;align-items:center;gap:10px;white-space:nowrap}
+  .mktbl .layer .sw{width:14px;height:14px;border-radius:4px;flex:none}
+  .mktbl .know{color:var(--steel);max-width:230px}
+  .mktbl .elts{font-size:13px;color:var(--ink);max-width:320px}
+  .mktbl .elts code{font-family:"IBM Plex Mono",monospace;font-size:12px;
+    background:var(--panel);padding:1px 5px;border-radius:4px}
+  .mktbl .lvls{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;
+    white-space:nowrap}
+  .mktbl tr[data-layer="embod"] .layer .sw{background:var(--tum)}
+  .mktbl tr[data-layer="inter"] .layer .sw{background:#12A594}
+  .mktbl tr[data-layer="proc"]  .layer .sw{background:var(--rose-hot)}
+  .mktbl tr[data-layer="embod"] .lvls{color:var(--tum)}
+  .mktbl tr[data-layer="inter"] .lvls{color:#12A594}
+  .mktbl tr[data-layer="proc"]  .lvls{color:var(--rose-hot)}
+  .mknote{margin-top:14px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+    color:var(--steel);line-height:1.6;max-width:100%}
+  @media(max-width:720px){
+    .mktbl,.mktbl thead,.mktbl tbody,.mktbl tr,.mktbl td{display:block}
+    .mktbl thead{display:none}
+    .mktbl tr{border-bottom:1.5px solid var(--line);padding:6px 0}
+    .mktbl td{border:none;padding:8px 16px}
+    .mktbl .know,.mktbl .elts{max-width:none}
+  }
+  h3.sec{font-family:"Space Grotesk",sans-serif;font-size:clamp(21px,2.6vw,28px);
+    font-weight:700;letter-spacing:-.01em;margin-bottom:14px}
+  h4.sub{font-family:"Space Grotesk",sans-serif;font-size:17px;font-weight:700;margin:26px 0 10px}
+  .todo{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10px;
+    letter-spacing:.1em;color:#8A5B00;background:#FFF3D6;border:1px solid #F0DCA8;
+    border-radius:999px;padding:2px 9px;margin-left:10px;vertical-align:middle}
+
+  /* header */
+  header.hero{padding:70px 0 0;text-align:center}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--tum);margin-bottom:20px}
+  h1{font-family:"Space Grotesk",sans-serif;font-size:clamp(28px,4.6vw,48px);font-weight:700;
+    letter-spacing:-.015em;line-height:1.14;max-width:1000px;margin:0 auto}
+  h1 .accent{color:var(--tum)}
+  .authors{margin-top:22px;font-size:19px}
+  .authors a{color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--tum)}
+  .affil{margin-top:8px;color:var(--steel);font-size:15.5px}
+  .btn-row{display:flex;flex-wrap:wrap;gap:11px;justify-content:center;margin-top:28px}
+  .btn{font-family:"Space Grotesk",sans-serif;font-weight:500;font-size:15px;
+    padding:9px 19px;border-radius:999px;text-decoration:none;border:1.5px solid var(--ink);
+    color:var(--ink);transition:background .15s,color .15s,border-color .15s}
+  .btn:hover{background:var(--ink);color:#fff}
+  .btn.primary{background:var(--tum);border-color:var(--tum);color:#fff}
+  .btn.primary:hover{background:#00447E;border-color:#00447E}
+  .btn.ghost{border-style:dashed;color:var(--steel);border-color:var(--ph-line)}
+
+  /* stat strip */
+  .specs{margin-top:44px;border-top:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink)}
+  .specs-inner{display:grid;grid-template-columns:repeat(6,1fr)}
+  .spec{padding:16px 10px 14px;text-align:center;border-right:1px solid var(--line)}
+  .spec:last-child{border-right:none}
+  .spec .v{font-family:"Space Grotesk",sans-serif;font-weight:700;
+    font-size:clamp(19px,2.4vw,28px);color:var(--tum)}
+  .spec .k{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--steel);margin-top:2px}
+  @media(max-width:760px){.specs-inner{grid-template-columns:repeat(3,1fr)}
+    .spec:nth-child(3){border-right:none}.spec:nth-child(-n+3){border-bottom:1px solid var(--line)}}
+
+  /* generic media placeholder */
+  .ph{border:1.5px dashed var(--ph-line);border-radius:10px;background:var(--ph-bg);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+    color:#8A97A4;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.07em;
+    text-align:center;padding:16px}
+  .ph .big{font-size:12.5px;color:#6B7885}
+  .ph.v16{aspect-ratio:16/9}
+  .ph.v43{aspect-ratio:4/3}
+  .ph.sq{aspect-ratio:1/1}
+  /* fitfull: show the WHOLE image (no crop), fill the width, no inset padding */
+  .ph.fitfull{padding:0;background:transparent;border:none;min-height:120px}
+  .ph.fitfull img{width:100%;height:auto;object-fit:contain;border-radius:8px;
+    image-rendering:auto}
+  /* vidbox: a clean square video slot with no dashed border */
+  .ph.vidbox{aspect-ratio:1/1;padding:0;border:none;border-radius:8px;overflow:hidden;
+    background:var(--ink)}
+  .ph.vidbox video{width:100%;height:100%;object-fit:cover;border-radius:8px}
+  /* any box holding real media loses the dashed placeholder border and padding */
+  .ph.phmedia{border:none;padding:0}
+  .ph.phmedia:not(.fitfull){background:var(--ink)}
+  .ph img,.ph video{width:100%;height:100%;object-fit:cover;border-radius:8px}
+  /* a media element that sits in a .ph box and hides itself if the file is missing,
+     revealing the grey placeholder text underneath */
+  .phmedia{position:relative}
+  .phmedia .fb{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:6px;color:#8A97A4;font-family:"IBM Plex Mono",monospace;
+    font-size:11px;text-align:center;padding:14px;pointer-events:none}
+  .phmedia img,.phmedia video{position:relative;z-index:1;width:100%;height:100%;
+    object-fit:cover;border-radius:8px;background:var(--ph-bg)}
+  .phmedia img[data-failed],.phmedia video[data-failed]{opacity:0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .obj-views{grid-template-columns:repeat(3,1fr)}
+  .obj-views .ph{padding:0 !important;gap:0 !important;overflow:hidden;
+    aspect-ratio:1/1;height:auto !important;min-height:0;display:block !important;
+    position:relative;background:var(--ph-bg)}
+  .obj-views .ph img{position:absolute !important;inset:0 !important;
+    width:100% !important;height:100% !important;object-fit:cover !important;
+    max-width:none !important;max-height:none !important;border-radius:8px}
+  .obj-views .ph .fb{position:absolute;inset:0;z-index:0}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:860px){.grid2,.grid3,.grid4{grid-template-columns:1fr 1fr}}
+  figcaption{margin-top:10px;font-size:14.5px;color:var(--steel);line-height:1.5}
+  figcaption b{color:var(--ink);font-weight:600}
+
+  /* benchmark object grid */
+  .obj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px}
+  .obj{border:none;border-radius:8px;background:transparent;padding:0;
+    cursor:pointer;transition:transform .18s}
+  .obj:hover,.obj.sel{transform:translateY(-3px)}
+  .obj .ph{aspect-ratio:1/1;height:auto;padding:0;gap:0;border-radius:8px;overflow:hidden;
+    border:1.5px solid var(--line);transition:border-color .18s,box-shadow .18s}
+  .obj:hover .ph,.obj.sel .ph{border-color:var(--tum);
+    box-shadow:0 8px 20px rgba(0,101,189,.15)}
+  .obj .ph img{width:100%;height:100%;object-fit:cover}
+  .obj .nm{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:#33404E;
+    margin-top:7px;word-break:break-all;line-height:1.35;text-align:center}
+  .profile{margin-top:20px;border:1.5px solid var(--line);border-radius:11px;background:#fff;
+    padding:20px}
+  .profile .hd{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+    flex-wrap:wrap;margin-bottom:14px}
+  .profile .hd h4{font-family:"Space Grotesk",sans-serif;font-size:19px;font-weight:700}
+  .profile .hd .meta{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--steel)}
+
+  /* explorer controls */
+  .controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+  .controls label{display:flex;flex-direction:column;gap:5px;
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--steel)}
+  .controls select{font-family:"IBM Plex Mono",monospace;font-size:13px;padding:8px 11px;
+    border:1.5px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);
+    min-width:190px}
+  .controls select:focus{outline:none;border-color:var(--tum)}
+
+  /* limitations / repro lists */
+  ul.clean{list-style:none;max-width:100%}
+  ul.clean li{position:relative;padding-left:20px;margin-top:11px}
+  ul.clean li:before{content:"";position:absolute;left:0;top:11px;width:7px;height:7px;
+    border-radius:50%;background:var(--tum)}
+  .kv{display:grid;grid-template-columns:180px 1fr;gap:9px 18px;max-width:100%;
+    font-size:16px}
+  .kv dt{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--steel);padding-top:3px}
+
+  pre.bibtex{font-family:"IBM Plex Mono",monospace;font-size:13px;line-height:1.6;
+    background:var(--ink);color:#E8EEF4;border-radius:9px;padding:20px 22px;overflow-x:auto}
+  .copy{margin-top:11px;font-family:"Space Grotesk",sans-serif;font-size:14px;padding:8px 16px;
+    border-radius:999px;border:1.5px solid var(--ink);background:transparent;cursor:pointer}
+  .copy:hover{background:var(--ink);color:#fff}
+  footer{padding:44px 0 60px;border-top:1px solid var(--line);color:var(--steel);font-size:15px}
+  footer a{color:var(--tum)}
+
+
+  /* ---- figure 2 subplot — styled to match the paper figure ---- */
+  #f2wrap{position:relative;margin-top:20px;background:#fff;border:1px solid var(--line);
+    border-radius:6px;padding:22px 24px 16px}
+  #f2svg{display:block;width:100%;height:auto}
+  #f2svg text{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;fill:#1A1A1A}
+  #f2svg .spine{stroke:#1A1A1A;stroke-width:1.3;fill:none}
+  #f2svg .tick{stroke:#1A1A1A;stroke-width:1.1}
+  #f2svg .grid{stroke:#C8CDD2;stroke-width:.9;stroke-dasharray:2.5 3.5}
+  #f2svg .barrier{stroke:#E23B2E;stroke-width:2.2;stroke-dasharray:8 6}
+  #f2svg .ttl{font-size:24px;font-weight:700}
+  #f2svg .alab{font-size:23px}
+  #f2svg .tk{font-size:20px}
+  #f2svg .anno{font-size:19px;fill:#C0392B}
+  #f2svg .idlbl2{font-size:24px;pointer-events:none}
+  #f2svg .lgbox{fill:#fff;fill-opacity:.92;stroke:#B9C0C7;stroke-width:1}
+  #f2svg .lgtxt{font-size:20px}
+  #f2svg .mk{transition:opacity .18s ease}
+  #f2svg .ell-face{fill-opacity:.05}
+  .legendhint{margin-top:16px;margin-bottom:8px;font-family:"IBM Plex Mono",monospace;
+    font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--tum);
+    display:flex;align-items:center;gap:8px}
+  .legendhint svg{width:15px;height:15px;fill:none;stroke:var(--tum);stroke-width:1.8}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .lgd{display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none;
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:12.5px;color:var(--ink);
+    border:1.5px solid var(--tum);border-radius:999px;padding:7px 14px 7px 10px;background:#fff;
+    box-shadow:0 1px 0 rgba(0,101,189,.12);
+    transition:border-color .16s,opacity .16s,background .16s,transform .12s,box-shadow .16s}
+  .lgd:hover{background:#F0F6FC;transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,101,189,.16)}
+  .lgd:active{transform:translateY(0)}
+  .lgd .box{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--tum);flex:none;
+    display:flex;align-items:center;justify-content:center;background:var(--tum)}
+  .lgd .box svg{width:11px;height:11px;stroke:#fff;stroke-width:2.4;fill:none}
+  .lgd svg.mkw{width:17px;height:17px;flex:none}
+  .lgd .fin{color:var(--steel);font-variant-numeric:tabular-nums;margin-left:2px}
+  .lgd.off{opacity:.55;background:var(--panel);border-color:var(--line);box-shadow:none}
+  .lgd.off:hover{background:#EEF1F4}
+  .lgd.off .box{background:#fff;border-color:var(--ph-line)}
+  .lgd.off .box svg{display:none}
+  .lgd.off svg.mkw *{fill:#C3C9CF!important;stroke:#C3C9CF!important}
+  .seg-toggle{display:inline-flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg-toggle button{font-family:"IBM Plex Mono",monospace;font-size:12px;padding:8px 14px;
+    background:#fff;border:none;cursor:pointer;color:var(--steel)}
+  .seg-toggle button.on{background:var(--tum);color:#fff}
+  .f2note{margin-top:13px;font-family:"IBM Plex Mono",monospace;font-size:11px;
+    color:var(--steel);line-height:1.6}
+  /* hover card */
+  #f2card{position:absolute;z-index:40;width:248px;background:#fff;border:1.5px solid var(--ink);
+    border-radius:10px;box-shadow:0 14px 34px rgba(16,21,28,.22);overflow:hidden;
+    opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .14s,transform .14s}
+  #f2card.show{opacity:1;transform:none}
+  #f2card .thumb{aspect-ratio:1/1;background:var(--ink);display:flex;align-items:center;
+    justify-content:center;color:#8DA3B8;font-family:"IBM Plex Mono",monospace;font-size:11px;
+    text-align:center;padding:0;overflow:hidden}
+  #f2card .thumb img{width:100%;height:100%;object-fit:contain;display:block}
+  #f2card .cap{padding:10px 13px}
+  #f2card .cap h5{font-family:"Space Grotesk",sans-serif;font-size:15px;font-weight:700;
+    margin-bottom:3px}
+  #f2card .cap .m{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--steel)}
+
+  /* ---- figure 5: physical effects vs success ---- */
+  #f5wrap{position:relative;margin-top:20px;background:#fff;border:1px solid var(--line);
+    border-radius:6px;padding:22px 24px 18px}
+  #f5svg{display:block;width:100%;height:auto}
+  #f5svg text{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;fill:#1A1A1A}
+  #f5svg .spine{stroke:#1A1A1A;stroke-width:1.2;fill:none}
+  #f5svg .tick{stroke:#1A1A1A;stroke-width:1}
+  #f5svg .grid{stroke:#D3D8DD;stroke-width:.8}
+  #f5svg .ttl{font-size:19px;font-weight:700}
+  #f5svg .alab{font-size:16px}
+  #f5svg .tk{font-size:14px;fill:#333}
+  #f5svg .fit{fill:none;stroke-width:2.6}
+  #f5svg .mk{cursor:pointer}
+  #f5card{position:absolute;z-index:40;width:230px;background:#fff;border:1.5px solid var(--ink);
+    border-radius:10px;box-shadow:0 14px 34px rgba(16,21,28,.22);overflow:hidden;
+    opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .14s,transform .14s}
+  #f5card.show{opacity:1;transform:none}
+  #f5card .thumb{aspect-ratio:1/1;background:var(--ink);display:flex;align-items:center;
+    justify-content:center;color:#8DA3B8;font-family:"IBM Plex Mono",monospace;font-size:11px;
+    text-align:center;padding:0;overflow:hidden}
+  #f5card .thumb img{width:100%;height:100%;object-fit:contain;display:block}
+  #f5card .cap{padding:10px 13px}
+  #f5card .cap h5{font-family:"Space Grotesk",sans-serif;font-size:15px;font-weight:700;margin-bottom:3px}
+  #f5card .cap .m{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--steel)}
+
+  /* ---- figure 7: parameter role scatter ---- */
+  #f7wrap{position:relative;margin-top:20px;background:#fff;border:1px solid var(--line);
+    border-radius:6px;padding:22px 24px 18px}
+  #f7svg{display:block;width:100%;height:auto}
+  #f7svg text{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;fill:#1A1A1A}
+  #f7svg .spine{stroke:#1A1A1A;stroke-width:1.2;fill:none}
+  #f7svg .tick{stroke:#1A1A1A;stroke-width:1}
+  #f7svg .qline{stroke:#9AA3AB;stroke-width:1;stroke-dasharray:5 4}
+  #f7svg .quad{font-size:15px;fill:#666}
+  #f7svg .quadbg{fill:#EBEBEB;fill-opacity:.85}
+  #f7svg .alab{font-size:17px}
+  #f7svg .tk{font-size:14px;fill:#333}
+  #f7svg .plab{font-size:14px}
+  #f7svg .ell-face{transition:opacity .16s}
+  #f7svg .ell-line{fill:none;stroke-dasharray:5 4;transition:opacity .16s}
+  #f7svg .pt{transition:opacity .16s}
+  .f7legend{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px;align-items:center}
+  .f7chip{display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none;
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:13px;color:var(--ink);
+    border:1.5px solid var(--tum);border-radius:999px;padding:7px 14px 7px 10px;background:#fff;
+    box-shadow:0 1px 0 rgba(0,101,189,.12);transition:all .16s}
+  .f7chip:hover{background:#F0F6FC;transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,101,189,.16)}
+  .f7chip .box{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--tum);flex:none;
+    display:flex;align-items:center;justify-content:center;background:var(--tum)}
+  .f7chip .box svg{width:11px;height:11px;stroke:#fff;stroke-width:2.4;fill:none}
+  .f7chip .sw{width:14px;height:14px;border-radius:50%;flex:none}
+  .f7chip.off{opacity:.5;background:var(--panel);border-color:var(--line);box-shadow:none}
+  .f7chip.off .box{background:#fff;border-color:var(--ph-line)}
+  .f7chip.off .box svg{display:none}
+
+  /* ---- figure 5: two panel-rows ---- */
+  .f5rowlabel{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:16px;
+    margin-bottom:8px}
+  .f5plotwrap{position:relative;background:#fff;border:1px solid var(--line);border-radius:6px;
+    padding:16px 18px 12px}
+  .f5svg{display:block;width:100%;height:auto}
+  .f5svg text{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;fill:#1A1A1A}
+  .f5svg .spine{stroke:#1A1A1A;stroke-width:1.1;fill:none}
+  .f5svg .tick{stroke:#1A1A1A;stroke-width:1}
+  .f5svg .grid{stroke:#E2E6EA;stroke-width:.8}
+  .f5svg .ttl{font-size:20px}
+  .f5svg .alab{font-size:14px;fill:#333}
+  .f5svg .tk{font-size:13px;fill:#333}
+  .f5svg .fit{fill:none;stroke:#4C78B0;stroke-width:2.4}
+  .f5svg .band{fill:#4C78B0;fill-opacity:.13}
+  .f5svg .mk{cursor:pointer;fill:#4C78B0}
+  .f5card{position:absolute;z-index:40;width:220px;background:#fff;border:1.5px solid var(--ink);
+    border-radius:10px;box-shadow:0 14px 34px rgba(16,21,28,.22);overflow:hidden;
+    opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .14s,transform .14s}
+  .f5card.show{opacity:1;transform:none}
+  .f5card .thumb{aspect-ratio:1/1;background:var(--ink);display:flex;align-items:center;
+    justify-content:center;color:#8DA3B8;font-family:"IBM Plex Mono",monospace;font-size:11px;
+    text-align:center;padding:0;overflow:hidden}
+  .f5card .thumb img{width:100%;height:100%;object-fit:contain;display:block}
+  .f5card .cap{padding:10px 13px}
+  .f5card .cap h5{font-family:"Space Grotesk",sans-serif;font-size:15px;font-weight:700;margin-bottom:3px}
+  .f5card .cap .m{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--steel)}
+
+</style>
+</head>
+<body>
+
+<header class="hero wrap">
+  <h1>Models Matter: Physical Interaction Effects Reveal the Necessary Model Structure for Reliable Contact-Rich Manipulation Learning</h1>
+  <div class="authors">
+    <a href="#">Florian Voigt</a><sup>1</sup> &nbsp;·&nbsp; <a href="#">Sami Haddadin</a><sup>1,2</sup>
+  </div>
+  <div class="affil"><sup>1</sup>MIRMI, Technical University of Munich &nbsp;·&nbsp;
+    <sup>2</sup>Mohamed Bin Zayed University of Artificial Intelligence</div>
+  <div class="btn-row">
+    <a class="btn primary" href="#">Paper (PDF)<span class="todo">TODO</span></a>
+    <a class="btn" href="#">Supplementary</a>
+    <a class="btn" href="#">Code &amp; Data</a>
+    <a class="btn" href="#cite">BibTeX</a>
+  </div>
+</header>
+
+<section class="band" id="motivation">
+  <div class="wrap">
+    <h3 class="sec">Why contact-rich assembly is still unsolved</h3>
+    <div class="prose">
+      <p class="lead">Assembly is the largest remaining manual step in modern manufacturing, and
+      insertion — mating a part to a receptacle under sub-millimetre tolerance — is its atomic
+      operation. Automating it reliably is the difference between a demonstration and a production
+      line.</p>
+      <p>Yet a decade of deep reinforcement learning, and the current wave of vision–language–action
+      models, have not produced insertion policies that survive contact with a real production line.
+      Reported successes cluster on simple pegs and generous clearances, lean on thousands of
+      GPU-hours of simulation, and fall apart on the electronic connectors and fasteners that
+      factories actually assemble.</p>
+      <p>The reason is that what governs success is barely observable to a camera: friction, jamming,
+      clamping, deformation, spring-loaded force barriers. This information never enters the
+      observation stream, so no amount of data or model capacity recovers it. Our claim is narrow
+      and concrete — <b>the missing ingredient is not scale but model knowledge</b>: the physical
+      structure of the robot, its contact interaction, and the task process, encoded in the policy
+      itself. Supply that structure and insertion becomes reliable; withhold it and learning breaks —
+      and so does the hardware.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band tint" id="layers">
+  <div class="wrap">
+    <h3 class="sec">What model knowledge is made of</h3>
+    <p class="prose">Model knowledge is not one thing. It resolves into three layers of physical
+    structure — the robot's own <b>embodiment</b>, its <b>interaction</b> with the environment, and
+    the <b>process</b> of the task itself. Each layer can be supplied explicitly or acquired by
+    learning, but none can be absent from a representation capable of reliable contact-rich
+    manipulation. The search or learning mechanism is listed separately: it is not itself model
+    knowledge.</p>
+
+    <table class="mktbl">
+      <thead>
+        <tr><th>Layer</th><th>Knowledge represented</th><th>Representative elements</th><th>Levels</th></tr>
+      </thead>
+      <tbody>
+        <tr data-layer="embod">
+          <td><span class="layer"><span class="sw"></span>Embodiment</span></td>
+          <td class="know">Physical structure and dynamics of the robotic system.</td>
+          <td class="elts">Kinematics and Jacobian <code>J(q)</code>; inertia <code>M̂(q)</code>;
+            gravity, Coriolis and friction compensation <code>ĝ, ĉ, µ̂</code>; external wrench
+            estimate <code>F̂ₑₓₜ</code>.</td>
+          <td class="lvls">II–VI</td>
+        </tr>
+        <tr data-layer="inter">
+          <td><span class="layer"><span class="sw"></span>Interaction</span></td>
+          <td class="know">Relationship between robot motion and exchanged effort.</td>
+          <td class="elts">Joint- vs. task-space representation; effort/flow variables
+            (wrench/twist); impedance control; physically meaningful action ranges and scaling.</td>
+          <td class="lvls">III–VI</td>
+        </tr>
+        <tr data-layer="proc">
+          <td><span class="layer"><span class="sw"></span>Process</span></td>
+          <td class="know">Temporal and physical organisation of the manipulation task.</td>
+          <td class="elts">Approach, contact and insertion phases; phase transitions; compliant
+            force–motion regulation; feedforward force; oscillatory search.</td>
+          <td class="lvls">VI</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="band" id="figure-section">
+<div class="wrap">
+  <h2>Where structure meets difficulty — and where learning breaks</h2>
+  <p class="intro">This figure maps every insertion task onto a rising spiral of model knowledge: the
+  inner disc names the physical effects and geometry that make each task hard, the winding lane
+  places the tasks by the structural knowledge a policy needs to solve them, and the levels ascend
+  from bare joint control to the full Tactile Skill. It ties together what the task demands, how much
+  structure the policy carries, and the point at which unstructured learning stops working.</p>
+  <div class="hint"><span class="dot"></span>HOVER A FIELD BETWEEN TWO LEVEL MARKERS</div>
+
+  <div id="panelA">
+    <div class="wedge-title">Model Knowledge</div>
+    <div class="wedge" aria-hidden="true"></div>
+    <div class="lvl-row" id="lvlRow"></div>
+  </div>
+
+  <div id="figure">
+    <div id="stage" aria-label="Spiral of insertion task classes linked to model knowledge levels">
+      <div id="cards" role="dialog" aria-modal="false" aria-hidden="true"></div>
+    </div>
+
+    <div class="bridge" id="bridgeC">
+      <div class="stem"><div class="lane rose"></div><div class="lane violet"></div><div class="line"></div></div>
+      <svg class="stemHead" width="24" height="14" viewBox="0 0 24 14" aria-hidden="true">
+        <path d="M2.5 2.5 L12 11 L21.5 2.5" fill="none" stroke="#10151C" stroke-width="2.6"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div id="panelCWrap">
+      <div id="cPop" aria-hidden="true"></div>
+      <div class="c-head"><h3>Generalization Beyond insertion</h3></div>
+      <div class="c-row" id="cRow"></div>
+    </div>
+
+    <div class="bridge" id="bridgeD">
+      <div class="stem"><div class="lane rose"></div><div class="lane violet"></div><div class="line"></div></div>
+      <svg class="stemHead" width="24" height="14" viewBox="0 0 24 14" aria-hidden="true">
+        <path d="M2.5 2.5 L12 11 L21.5 2.5" fill="none" stroke="#10151C" stroke-width="2.6"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div id="panelDWrap">
+      <div id="dPop" class="pop" aria-hidden="true"></div>
+      <div class="c-head"><h3>Industrial assembly automation</h3></div>
+      <div class="d-row" id="dRow"></div>
+    </div>
+  </div>
+</div>
+
+</section>
+
+<section class="band" id="benchmark">
+  <div class="wrap">
+    <h3 class="sec">A benchmark for probing model knowledge in learning</h3>
+    <p class="prose">The 22 objects are not chosen for visual variety but for the physical structure
+    they demand of a policy. Each is a real electronic connector, fastener or mechanism — plugs,
+    sockets, keys, locks — spanning the effects that make insertion hard: tight clearances,
+    interference fits, clamping, deformation, friction and spring-loaded force barriers. Because these
+    effects are invisible to a camera and only revealed on contact, the set isolates exactly the
+    knowledge a policy must carry rather than perceive. Running the full model-knowledge hierarchy
+    against every object turns the benchmark into a controlled probe: it shows which structural
+    ingredient each task needs, and where a policy that lacks it fails. Click an object to open its
+    datasheet.</p>
+    <div class="obj-grid" id="objGrid" style="margin-top:22px"></div>
+    <div class="profile" id="objProfile"></div>
+  </div>
+</section>
+
+<section class="band tint" id="video">
+  <div class="wrap">
+    <h3 class="sec">The system in action</h3>
+    <div class="ph v16 phmedia" style="margin-top:18px">
+      <video src="assets/videos/hero.mp4" muted loop autoplay playsinline controls
+             onerror="this.setAttribute('data-failed','')"></video>
+      <span class="fb"><span class="big"></span></span>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="findings">
+  <div class="wrap">
+    <h2 style="margin-bottom:28px">Findings</h2>
+
+    <h3 class="sec">Models matter: structure beats scale</h3>
+    <p class="prose">Each point is one object at one model-knowledge level. Pick the baseline algorithm
+    and the control domain, toggle levels in the legend, and switch between the per-object scatter and
+    the variance ellipses of the paper. Hover a point to see which object it is. The dashed line is the
+    99% success barrier.</p>
+
+    <div class="controls" style="margin-top:20px">
+      <label>Baseline algorithm<select id="f2alg">
+        <option value="ppo">PPO — Proximal Policy Optimization</option>
+        <option value="sac">SAC — Soft Actor-Critic</option></select></label>
+      <label>Control domain<select id="f2dom">
+        <option value="velocity">Velocity domain</option>
+        <option value="force">Force domain</option></select></label>
+      <label>View<span class="seg-toggle" id="f2view" role="group" aria-label="View mode">
+        <button type="button" data-v="objects" class="on">Objects</button>
+        <button type="button" data-v="dist">Variance</button></span></label>
+    </div>
+
+    <div id="f2wrap">
+      <svg id="f2svg" viewBox="0 0 1080 680" role="img"
+           aria-label="Success rate versus insertion speed across objects and model-knowledge levels, showing structure beats scale"></svg>
+      <div id="f2card" aria-hidden="true"></div>
+      <div class="legendhint"><svg viewBox="0 0 20 20"><path d="M6 10 L9 13 L14 6"/><rect x="2.5" y="2.5" width="15" height="15" rx="3"/></svg>Click a level to show or hide it</div>
+      <div class="legend" id="f2legend"></div>
+      <div class="f2note" id="f2note"></div>
+    </div>
+
+
+  </div>
+</section>
+
+<section class="band tint" id="fig5">
+  <div class="wrap">
+    <h3 class="sec">Physical effects versus success</h3>
+    <p class="prose">Success rate against the normalized magnitude of each physical effect, with a
+    linear fit and its 95% confidence band. Two representative rows are shown — SAC at velocity Level V
+    and SAC at force Level IV. Hover a dot to see the object and its picture.</p>
+
+    <div id="f5rowV">
+      <div class="f5rowlabel">SAC — Velocity Domain, Level V — Success Rate</div>
+      <div class="f5plotwrap">
+        <svg class="f5svg" data-alg="sac" data-dom="velocity" data-li="3"
+             viewBox="0 0 1520 340" role="img" aria-label="SAC velocity level V success vs effects"></svg>
+        <div class="f5card" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div id="f5rowF" style="margin-top:26px">
+      <div class="f5rowlabel">SAC — Force Domain, Level IV — Success Rate</div>
+      <div class="f5plotwrap">
+        <svg class="f5svg" data-alg="sac" data-dom="force" data-li="2"
+             viewBox="0 0 1520 340" role="img" aria-label="SAC force level IV success vs effects"></svg>
+        <div class="f5card" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div class="f2note" id="f5note" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--steel);margin-top:14px"></div>
+  </div>
+</section>
+
+<section class="band" id="fig7">
+  <div class="wrap">
+    <h3 class="sec">Parameter role: cost versus success importance</h3>
+    <p class="prose">Each point is one policy parameter, placed by its mean permutation importance for
+    success (x) and for cost given success (y). Parameters are grouped by the phase of the skill they
+    belong to. Click a group in the legend to show or hide it together with its variance region.</p>
+    <div id="f7wrap">
+      <svg id="f7svg" viewBox="0 0 900 760" role="img"
+           aria-label="Cost importance versus success importance per parameter"></svg>
+    </div>
+    <div class="f7legend" id="f7legend"></div>
+    <div class="f2note" id="f7note" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--steel);margin-top:13px"></div>
+  </div>
+</section>
+
+<section class="band tint" id="success-structure">
+  <div class="wrap">
+    <h3 class="sec">Success basins are narrow, multimodal, and hard to transfer</h3>
+    <p class="prose">The parameters that make an insertion succeed do not form a single broad
+    region. Mapping the feasible policy space reveals narrow, often disconnected basins — several
+    distinct settings can solve the same task, while tiny departures from any of them fail. Because
+    each basin is shaped by the specific contact physics of its object, the solution for one task
+    rarely transfers to another: what works for a snug socket is the wrong strategy for a chamfered
+    pin or a spring-loaded barrier. This is why a single learned policy does not generalise across the
+    benchmark, and why the structure a policy carries matters more than the volume of data it sees.</p>
+    <figure style="margin-top:16px">
+      <div id="hilbertFig" style="width:100%"></div>
+      <figcaption><b>The structure of the success landscape.</b> Each panel orders one object's
+      insertion attempts along a Hilbert curve through parameter space (similar settings adjacent).
+      Green bars hang from the top for successful trials, orange rise from the bottom for failures,
+      and the blue line is the local success rate. Feasible policies occupy narrow, multimodal basins
+      that differ from task to task — the geometric reason insertion skills resist transfer.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="band" id="safety">
+  <div class="wrap">
+    <h3 class="sec">When structure is missing, hardware breaks</h3>
+    <p class="prose">The cost of missing model knowledge is not only failed insertions — it is
+    destroyed components. Without the correct physical structure the policy applies force without the
+    right precision or direction, and failed attempts damage the parts. Destruction rises sharply
+    with action scaling; the force domain at Level IV alone damaged 26–31 objects. The structured
+    Tactile Skill, by contrast, produces no damage beyond normal operational wear — its impedance
+    structure implicitly bounds contact forces regardless of the learned parameters.</p>
+    <figure style="margin-top:24px">
+      <div class="ph fitfull phmedia">
+        <img src="assets/figures/destroyed_objects.png" alt="Objects destroyed during learning"
+             onerror="this.setAttribute('data-failed','')">
+        <span class="fb"><span class="big"></span></span></div>
+      <figcaption><b>Components damaged or destroyed during the learning campaign.</b> Unstructured
+      deep-RL under significant interaction effects systematically damages hardware; the Tactile Skill
+      stays at baseline wear.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="band tint" id="workflow-learning">
+  <div class="wrap">
+    <h3 class="sec">Learning the industrial workflows</h3>
+    <p class="prose">Each industrial workflow is a chain of contact-rich subtasks — grasping, mating,
+    seating, fastening — and every one is acquired as a structured Tactile Skill directly on the real
+    line, without simulation. Learning is fast: every subtask across all four partner assemblies is
+    learned within 30 minutes, after which the system runs the full workflows autonomously. In the
+    figure below, each bar is one training batch of ten trials; salmon batches contain no successful
+    trial, blue batches contain at least one. Execution time falls as the skill converges, and the
+    annotations give each subtask's final success rate and its mean / initial execution time.</p>
+
+    <figure style="margin-top:22px">
+      <div class="ph fitfull phmedia"><img src="assets/figures/Industrial_learning_full.png"
+        alt="Learning curves across four industrial partner assemblies"
+        onerror="this.setAttribute('data-failed','')">
+        <span class="fb"><span class="big"></span></span></div>
+      <figcaption><b>Learning curves across four partner assemblies.</b> Each bar is a training batch
+      of ten trials; salmon batches contain no successful trial, blue at least one. Annotations give
+      each subtask's final success rate and mean / initial execution time. All subtasks are learned
+      within 30 minutes.</figcaption>
+    </figure>
+
+    <p class="prose" style="margin-top:34px">The clips below show this on-hardware learning as it
+    happens.</p>
+    <div class="grid4" style="margin-top:22px">
+      <figure><div class="ph vidbox phmedia">
+        <video src="assets/videos/learning_workflow_1.mp4" muted loop autoplay playsinline
+               onerror="this.setAttribute('data-failed','')"></video>
+        <span class="fb"><span class="big"></span></span></div></figure>
+      <figure><div class="ph vidbox phmedia">
+        <video src="assets/videos/learning_workflow_2.mp4" muted loop autoplay playsinline
+               onerror="this.setAttribute('data-failed','')"></video>
+        <span class="fb"><span class="big"></span></span></div></figure>
+      <figure><div class="ph vidbox phmedia">
+        <video src="assets/videos/learning_workflow_3.mp4" muted loop autoplay playsinline
+               onerror="this.setAttribute('data-failed','')"></video>
+        <span class="fb"><span class="big"></span></span></div></figure>
+      <figure><div class="ph vidbox phmedia">
+        <video src="assets/videos/learning_workflow_4.mp4" muted loop autoplay playsinline
+               onerror="this.setAttribute('data-failed','')"></video>
+        <span class="fb"><span class="big"></span></span></div></figure>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="industrial">
+  <div class="wrap">
+    <h3 class="sec">Four industrial workflows, fully autonomous</h3>
+    <p class="prose">Four complete assembly workflows were automated end to end and run without human
+    intervention: a bottle-gripper assembly, a control-cabinet build, a bus-module insertion, and a
+    coupling test. Each chains several contact-rich subtasks and executes at industrial cycle times.
+    Throughput is reported relative to a skilled human operator performing the same workflow; success
+    is the fraction of fully completed cycles.</p>
+    <div id="indWrap" style="position:relative">
+      <div id="indPop" class="pop" aria-hidden="true"></div>
+      <div class="grid4" style="margin-top:22px" id="indGrid"></div>
+    </div>
+    <div class="grid2" style="margin-top:22px">
+      <figure><div class="ph fitfull phmedia"><img src="assets/figures/automation_performance.png"
+        alt="Throughput vs human" onerror="this.setAttribute('data-failed','')">
+        <span class="fb"><span class="big"></span></span></div>
+        <figcaption><b>Throughput vs. human.</b> Completed cycles per hour for each workflow, against a skilled operator baseline.</figcaption></figure>
+      <figure><div class="ph fitfull phmedia"><img src="assets/figures/cost_vs_human.png"
+        alt="Productivity per unit labour cost" onerror="this.setAttribute('data-failed','')">
+        <span class="fb"><span class="big"></span></span></div>
+        <figcaption><b>Productivity per unit labour cost.</b> Output normalised by cost, showing the economic case for autonomous assembly.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="limitations">
+  <div class="wrap">
+    <h3 class="sec">Limitations</h3>
+    <ul class="clean">
+      <li>The Tactile Skill assumes a <b>known goal pose</b>. In this study the target pose is
+      provided; in practice it can be obtained from a single visual teach-in or a standard vision
+      system, but the method does not itself solve target localisation.</li>
+      <li>The approach requires an <b>embodiment model</b> — robot dynamics, the underlying control
+      principles (impedance control, feedforward force), and in many cases a model of the manipulated
+      environment. It presumes a torque-controlled manipulator with reliable external-torque
+      estimation, which among commercial arms is dependably available on the Franka Emika robot.</li>
+      <li>The claim is deliberately <b>narrow</b>: it concerns contact-rich tasks governed by
+      sub-millimetre clearances and physical effects (pressure, deformation, interference fit,
+      clamping, friction) whose control information is absent from the visual observation stream. It
+      is not a claim about the limits of learning in general, and does not dispute the progress of
+      large behaviour or vision–language–action models on visually rich tasks.</li>
+      <li>The benchmark, while spanning diverse geometries and interaction regimes, <b>does not
+      exhaust</b> the full range of robotic embodiments, materials, or assembly conditions found in
+      industrial practice.</li>
+      <li>Industrial throughput and cost figures (150–200% of human daily throughput as a dual-arm
+      system; up to 400% of human productivity per unit labour cost) hold <b>under the evaluated
+      deployment conditions</b> and should not be read as guarantees across arbitrary lines.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="band tint" id="cite">
+  <div class="wrap">
+    <h3 class="sec">BibTeX</h3>
+<pre class="bibtex" id="bib">@article{voigt2026modelsmatter,
+  author  = {Voigt, Florian and Haddadin, Sami},
+  title   = {Models Matter: Physical Interaction Effects Reveal the
+             Necessary Model Structure for Reliable Contact-Rich
+             Manipulation Learning},
+  journal = {TODO},
+  year    = {2026}
+}</pre>
+    <button class="copy" onclick="navigator.clipboard.writeText(document.getElementById('bib').innerText).then(()=>{this.innerText='Copied';setTimeout(()=>this.innerText='Copy BibTeX',1500)})">Copy BibTeX</button>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>We thank the members of MIRMI and the Chair of Robotics and Systems Intelligence for their
+    support with the hardware and experiments. Funding and detailed acknowledgements are listed in the
+    published paper.</p>
+    <p style="margin-top:8px">Chair of Robotics and Systems Intelligence, MIRMI, Technical University
+      of Munich · Contact: <a href="mailto:florian.voigt@tum.de">florian.voigt@tum.de</a></p>
+  </div>
+</footer>
+
+<script>
+const PLAY=`<div class="play"><svg viewBox="0 0 12 12"><path d="M1 0 L11 6 L1 12 Z"/></svg></div>`;
+const PH_ICON=`<svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="8.5" cy="10" r="1.8"/><path d="M4 18 L10 12.5 L14 16 L17 13.5 L20 16.5"/></svg>`;
+
+/* object-photo fallback: try .png, then .jpg, then a grey "PHOTO · name" box.
+   called from an <img>'s onerror as onerror="objImgErr(this)" — no regex in template. */
+function objImgErr(img){
+  const t=img.getAttribute("data-tried")||"png";
+  if(t==="png"){
+    img.setAttribute("data-tried","jpg");
+    img.src=img.src.slice(0,img.src.lastIndexOf("."))+".jpg";
+  }else{
+    const box=document.createElement("div");
+    box.className="thumb";box.textContent="PHOTO · "+img.alt;
+    img.replaceWith(box);
+  }
+}
+
+/* =====================================================================
+   PANEL (a)   sr = success rate [%]   ·   pf = performance [1/s]
+===================================================================== */
+const LEVEL_CARDS=[
+  {id:"A", name:"Naive Joint Space", img:null, model:["s = q","a ~ P(s, σ)"],
+   note:["Infeasible:","· no gravity model","· collapsing behaviour","· system damage"]},
+  {id:"B", name:"Feedback Joint Space", img:null, model:["s = (q, τ_ext)","a ~ P(s, σ)"],
+   note:["Infeasible:","· no gravity model","· collapsing behaviour","· system damage"]},
+  {id:"I", name:"Dynamics Compensated Joint Space", img:null, model:["s = q","a ~ P(s, σ)"],
+   noteGray:["Insensitive control:","· no contact feedback","· blunt interaction"]},
+  {id:"II", name:"Interaction Joint Space", img:null, model:["s = (q, q̇, τ_ext)","a ~ P(s, σ)"],
+   vel:{sr:0.9,pf:0.35}, frc:{sr:5.7,pf:0.22}},
+  {id:"III", name:"Interaction Task Space", img:null, model:["s = (x, ẋ, F_ext)","a ~ P(s, σ) ∈ se(3)"],
+   vel:{sr:1.4,pf:0.51}, frc:{sr:7.5,pf:0.38}},
+  {id:"IV", name:"Interaction Task Space-Range", img:null, model:["s = (x, ẋ, F_ext)","a ~ f_s P(s, σ)"],
+   vel:{sr:29.1,pf:0.72}, frc:{sr:27.0,pf:0.78}},
+  {id:"V", name:"Interaction Task Space-Range-Variation", img:null, model:["s = (x, ẋ, F_ext)","σ = s_σ(n_t) I"],
+   vel:{sr:46.2,pf:0.71}, frc:null},
+  {id:"VI", name:"Tactile Skill", img:null, model:["Ω = Percept Vector","a = F = f(θ_π, θ_c, Ω)"],
+   both:{sr:100,pf:1.02}},
+];
+const H_MAX=44, PF_MAX=1.15;
+const hSR=v=>Math.max(2,v/100*H_MAX);
+const hPF=v=>Math.max(2,v/PF_MAX*H_MAX);
+function group(d,dom){
+  if(!d) return `<div class="grp"><div class="pair">
+      <div class="bar na" style="height:2px"></div><div class="bar na" style="height:2px"></div></div>
+    <div class="nums"><span>n.a.</span><span>n.a.</span></div><div class="dom">${dom}</div></div>`;
+  return `<div class="grp"><div class="pair">
+      <div class="bar sr" style="height:${hSR(d.sr)}px"></div>
+      <div class="bar pf" style="height:${hPF(d.pf)}px"></div></div>
+    <div class="nums"><span>${d.sr}%</span><span>${d.pf}/s</span></div>
+    <div class="dom">${dom}</div></div>`;
+}
+
+const row=document.getElementById("lvlRow");
+for(const L of LEVEL_CARDS){
+  const el=document.createElement("div");
+  el.className="lvl-card";el.dataset.level=L.id;el.tabIndex=0;
+  let block="";
+  if(L.both)            block=`<div class="bars">${group(L.both,"VEL+FRC")}</div>`;
+  else if(L.vel||L.frc) block=`<div class="bars">${group(L.vel,"Velocity")}${group(L.frc,"Force")}</div>`;
+  else block=L.note?`<div class="note">${L.note.join("<br>")}</div>`
+       :L.noteGray?`<div class="note gray">${L.noteGray.join("<br>")}</div>`:"";
+  const lvSrc=L.img||("assets/levels/level_"+L.id+".png");
+  const ph=`<div class="imgph"><img src="${lvSrc}" alt="${L.name} example"
+      onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'imgfb',innerHTML:'IMG · LEVEL ${L.id}'}))"></div>`;
+  el.innerHTML=`<div class="lv">LEVEL <b>${L.id}</b></div><h4>${L.name}</h4>${ph}
+    <div class="model">${L.model.join("<br>")}</div>${block}`;
+  row.appendChild(el);
+}
+
+/* =====================================================================
+   PANEL (c)
+===================================================================== */
+const C_CARDS=[
+  {name:"Screwing", img:"assets/skills/screwing.png",
+   model:["Ω = Percept Vector","a = F = f(θ_π, θ_c, Ω)"], sr:100, pf:0.32},
+  {name:"Visual Precision Positioning", img:"assets/skills/visual_precision.png",
+   model:["a = F = f(θ_π, θ_c, Ω)"], sr:100, pf:0.61},
+  {name:"Coordinated Force-Motion", img:"assets/skills/force_motion.png",
+   model:["a = F = f(θ_π, θ_c, Ω)"], sr:100, pf:0.28},
+];
+function vidErr(el){
+  const d=document.createElement("div");
+  d.className="vidfb";d.innerHTML=PLAY;
+  el.replaceWith(d);
+}
+const VID_START=0.1;   /* start playback this many seconds in (skip first frame) */
+const vidHTML=(v,label)=>v
+  ? `<video src="${v}#t=${VID_START}" muted autoplay playsinline
+       onloadedmetadata="this.currentTime=${VID_START}"
+       onended="this.currentTime=${VID_START};this.play()"
+       onerror="vidErr(this)"></video>`
+  : `${PLAY}`;
+/* image with graceful fallback to a grey box (used by the Generalization panel) */
+const imgHTML=(src,alt)=>src
+  ? `<img src="${src}" alt="${alt||""}" style="width:100%;height:100%;object-fit:cover"
+       onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'vidfb',textContent:'IMG'}))">`
+  : `<div class="vidfb">IMG</div>`;
+
+const cRow=document.getElementById("cRow"), cPop=document.getElementById("cPop");
+const panelCWrap=document.getElementById("panelCWrap"), figure=document.getElementById("figure");
+C_CARDS.forEach(C=>{
+  const el=document.createElement("div");
+  el.className="c-card";el.tabIndex=0;
+  el.innerHTML=`<h4>${C.name}</h4>
+    <div class="c-vid">${imgHTML(C.img,C.name)}</div>
+    <div class="model">${C.model.join("<br>")}</div>
+    <div class="bars">${group({sr:C.sr,pf:C.pf},"VEL+FRC")}</div>`;
+  cRow.appendChild(el);
+});
+/* enlarged preview, shared by panels (c) and (d): image if provided, else video */
+function showPopIn(pop,wrap,d,el){
+  pop.innerHTML=`<div class="big">${d.img?imgHTML(d.img,d.name):vidHTML(d.video)}</div>
+    <div class="cap"><span>${d.name}</span><em>${d.note}</em></div>`;
+  pop.classList.add("show");pop.setAttribute("aria-hidden","false");
+  const pr=wrap.getBoundingClientRect(), cr=el.getBoundingClientRect();
+  const w=pop.offsetWidth, centre=cr.left-pr.left+cr.width/2;
+  pop.style.left=Math.max(10,Math.min(centre-w/2,pr.width-w-10))+"px";
+}
+function hidePopIn(pop){pop.classList.remove("show");pop.setAttribute("aria-hidden","true")}
+function showPop(C,el){
+  showPopIn(cPop,panelCWrap,{name:C.name,img:C.img,note:`${C.sr}% · ${C.pf}/s`},el);
+}
+function hidePop(){hidePopIn(cPop)}
+
+/* =====================================================================
+   PANEL (d) — industrial validation
+   sr = success rate [%]   ·   hum = throughput as % of a human operator
+===================================================================== */
+const D_CARDS=[
+  {name:"Bottle Gripper",   sub:"Full workflow · autonomous", video:"assets/videos/workflow_bottle_gripper.mp4", sr:100, hum:50},
+  {name:"Control Cabinet",  sub:"Full workflow · autonomous", video:"assets/videos/workflow_control_cabinet.mp4", sr:100, hum:46},
+  {name:"Bus Module",       sub:"Full workflow · autonomous", video:"assets/videos/workflow_bus_module.mp4", sr:98,  hum:53},
+  {name:"Coupling Testing", sub:"Full workflow · autonomous", video:"assets/videos/workflow_coupling_testing.mp4", sr:100, hum:66},
+];
+const dRow=document.getElementById("dRow"), dPop=document.getElementById("dPop");
+const panelDWrap=document.getElementById("panelDWrap");
+D_CARDS.forEach(D=>{
+  const el=document.createElement("div");
+  el.className="d-card";el.tabIndex=0;
+  el.innerHTML=`<h4>${D.name}</h4><div class="sub">${D.sub}</div>
+    <div class="c-vid">${vidHTML(D.video)}</div>
+    <div class="d-perf">
+      <div class="m"><span class="val sr">${D.sr}%</span><span class="k">Success<br>rate</span></div>
+      <div class="m"><span class="val pf">${D.hum}%</span><span class="k">Performance<br>w.r.t. human</span></div>
+    </div>`;
+  const open=()=>showPopIn(dPop,panelDWrap,
+    {name:D.name,video:D.video,note:`${D.sr}% · ${D.hum}% of human`},el);
+  el.addEventListener("mouseenter",open);
+  el.addEventListener("focus",open);
+  el.addEventListener("mouseleave",()=>hidePopIn(dPop));
+  el.addEventListener("blur",()=>hidePopIn(dPop));
+  dRow.appendChild(el);
+});
+
+/* =====================================================================
+   PANEL (b)
+===================================================================== */
+/* S_END also sets how much arc Level VI has: its field runs mark→S_END, and the
+   two dots are spaced across it, so 445 gives Mating and Jamming ~13° apart */
+const S_START=-180, S_END=425;
+const S_BLUE=-180, S_ROSE=0, RAMP=180;
+const STEP_AFTER=10;
+
+const SEGMENTS=[
+  {level:"I",   mark:120, tasks:[
+  ]},
+  {level:"II",  mark:170, tasks:[
+    {name:["High","Clearance"],      sAt:190,    tags:["G1 Shape","G3 Size"]},
+    {name:["Convex","Complement"],   sAt:210.25, tags:["G1 Shape","P1 Pressure"]},
+    {name:["Rotational","Symmetry"], sAt:227.5,  tags:["G1 Shape","G2 Pose"]},
+  ]},
+  {level:"III", mark:240, place:"below", tasks:[
+    {name:["Rotational","Asymmetry"], sAt:263.75, tags:["G1 Shape","G2 Pose","P5 Friction"]},
+    {name:["Chamfer"],                sAt:290,    tags:["G1 Shape","P1 Pressure"]},
+  ]},
+  {level:"IV",  mark:300, tasks:[
+    {name:["Recessed","Problem"],        tags:["G1 Shape","P4 Clamping"]},
+    {name:["Protrusion"],                tags:["G1 Shape","P3 Interference Fit"]},
+    {name:["Low","Clearance"],           tags:["G3 Size","P3 Interference","P5 Friction"]},
+  ]},
+  {level:"V",   mark:360, tasks:[
+    {name:["Unique","Orientation"], sAt:374, tags:["G2 Pose","M2 Surface Friction"]},
+    {name:["Force","Barrier"], iconDy:10,     tags:["P1 Pressure","M1 Flexibility"]},
+  ]},
+  {level:"VI",  mark:400, place:"top", tasks:[
+    {name:["Mating"],                    tags:["P3 Interference Fit","P4 Clamping"]},
+    {name:["Jamming"], sAt:425, iconDy:90, tags:["P5 Friction","P4 Clamping"]},
+  ]},
+];
+SEGMENTS.forEach((S,i)=>{
+  S.s0=S.mark;
+  S.s1=(i<SEGMENTS.length-1)?SEGMENTS[i+1].mark:S_END;
+  S.tasks.forEach(t=>{
+    const slug=(Array.isArray(t.name)?t.name.join("_"):String(t.name))
+      .toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"");
+    t.img=t.img??null;
+    t.video=t.video??("assets/videos/task_"+slug+".mp4");
+  });
+});
+const EFFECT_IMGS={P1:null,P2:null,P3:null,P4:null,P5:null,M1:null,M2:null,M3:null,G1:null,G2:null,G3:null};
+
+/* ---------------- geometry ---------------- */
+/* side-placed ring labels reach x≈2500 on the right, so the frame is sized and
+   the centre nudged left to keep equal margins */
+const W=2560,H=2280,CX=1182,CY=970;
+const R_DISC=450, GROW=300, EXP=1.0, LANEW=127;
+const Y_TAIL=H;
+
+const rad=d=>d*Math.PI/180;
+const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rSeam=s=>R_DISC+GROW*Math.pow(cl(s/S_END,0,1),EXP);
+const P   = (r,s)=>[CX+r*Math.cos(rad(-s)), CY-r*Math.sin(rad(-s))];
+const TAN = s=>[ Math.sin(rad(-s)),  Math.cos(rad(-s))];
+const wBlue=s=>LANEW*cl((s-S_BLUE)/RAMP,0,1);
+const wRose=s=>LANEW*cl((s-S_ROSE)/RAMP,0,1);
+
+const EXIT=P(rSeam(S_END-0.6),S_END-0.6);
+const TG=TAN(S_END);
+/* the run-out descends on the horizontal centre line of the figure; the exit
+   tangent points left, so the handle is kept short to avoid a visible bulge */
+const X_COL=W/2;
+const B0=EXIT,B1=[EXIT[0]+TG[0]*45,EXIT[1]+TG[1]*45],
+      B2=[X_COL,EXIT[1]+190],B3=[X_COL,Y_TAIL];
+const bez=(t,p0,p1,p2,p3)=>{const u=1-t;return[
+  u*u*u*p0[0]+3*u*u*t*p1[0]+3*u*t*t*p2[0]+t*t*t*p3[0],
+  u*u*u*p0[1]+3*u*u*t*p1[1]+3*u*t*t*p2[1]+t*t*t*p3[1]]};
+const ANG_END=Math.atan2(Math.sin(rad(S_END)),Math.cos(rad(S_END)));
+function tailPoint(t,off){
+  const c=bez(t,B0,B1,B2,B3);
+  const a=ANG_END*(1-t);
+  return[c[0]+Math.cos(a)*off, c[1]+Math.sin(a)*off];
+}
+
+/* ---------------- svg scaffold ---------------- */
+const NS="http://www.w3.org/2000/svg";
+const svg=document.createElementNS(NS,"svg");
+svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+const stage=document.getElementById("stage");
+stage.insertBefore(svg,document.getElementById("cards"));
+const add=(p,tag,attrs={},html=null)=>{const el=document.createElementNS(NS,tag);
+  for(const k in attrs)el.setAttribute(k,attrs[k]);
+  if(html!=null)el.innerHTML=html;p.appendChild(el);return el};
+const fmt=(x,y)=>x.toFixed(1)+" "+y.toFixed(1);
+
+/* sample s0…s1 and ALWAYS include the exact end point, otherwise consecutive
+   segments stop short of their boundary and leave hairline gaps when highlighted */
+function samples(s0,s1,step=1.5){
+  const out=[];
+  for(let s=s0;s<s1;s+=step)out.push(s);
+  out.push(s1);
+  return out;
+}
+function ribbonPath(oFn,iFn,s0,s1,step=1.5){
+  const ss=samples(s0,s1,step);
+  const out=ss.map(s=>P(oFn(s),s)), inn=ss.map(s=>P(iFn(s),s));
+  let d="M"+fmt(...out[0]);
+  for(let i=1;i<out.length;i++)d+="L"+fmt(...out[i]);
+  for(let i=inn.length-1;i>=0;i--)d+="L"+fmt(...inn[i]);
+  return d+"Z";
+}
+function tailRibbon(o,i,step=0.02){
+  const out=[],inn=[];
+  for(let t=0;t<=1+1e-9;t+=step){out.push(tailPoint(t,o));inn.push(tailPoint(t,i))}
+  let d="M"+fmt(...out[0]);
+  for(let k=1;k<out.length;k++)d+="L"+fmt(...out[k]);
+  for(let k=inn.length-1;k>=0;k--)d+="L"+fmt(...inn[k]);
+  return d+"Z";
+}
+const roseOuter=s=>rSeam(s), roseInner=s=>rSeam(s)-wRose(s);
+const blueInner=s=>rSeam(s), blueOuter=s=>rSeam(s)+wBlue(s);
+
+const gBase=add(svg,"g",{class:"ribbon"});
+add(gBase,"path",{d:ribbonPath(roseOuter,roseInner,S_START,S_END),fill:"var(--rose)"});
+add(gBase,"path",{d:ribbonPath(blueOuter,blueInner,S_START,S_END),fill:"var(--violet)"});
+add(gBase,"path",{d:tailRibbon(0,-LANEW),fill:"var(--rose)"});
+add(gBase,"path",{d:tailRibbon(LANEW,0),fill:"var(--violet)"});
+
+const hotEls=SEGMENTS.map((S,i)=>{
+  const g=add(svg,"g",{class:"ribbon-hot"});
+  const from=(i===0)?S_START:S.s0;
+  /* overshoot the far boundary by a hair so neighbouring overlays butt together */
+  const to=(i===SEGMENTS.length-1)?S_END:S.s1+0.4;
+  add(g,"path",{d:ribbonPath(roseOuter,roseInner,from,to),fill:"var(--rose-hot)"});
+  add(g,"path",{d:ribbonPath(blueOuter,blueInner,from,to),fill:"var(--violet-hot)"});
+  if(i===SEGMENTS.length-1){
+    add(g,"path",{d:tailRibbon(0,-LANEW),fill:"var(--rose-hot)"});
+    add(g,"path",{d:tailRibbon(LANEW,0),fill:"var(--violet-hot)"});
+  }
+  return g;
+});
+
+let seam="M"+fmt(...P(rSeam(S_START),S_START));
+for(const s of samples(S_START,S_END))seam+="L"+fmt(...P(rSeam(s),s));
+for(let t=0;t<=1;t+=0.02)seam+="L"+fmt(...tailPoint(t,0));
+add(svg,"path",{d:seam,class:"centerline"});
+
+function arrowAt(s){
+  const[x,y]=P(rSeam(s),s);const[tx,ty]=TAN(s);
+  add(svg,"path",{class:"chev",d:"M-14 -17 L11 0 L-14 17",fill:"none",stroke:"#10151C",
+    "stroke-width":4.4,"stroke-linecap":"round","stroke-linejoin":"round",
+    transform:`translate(${x} ${y}) rotate(${Math.atan2(ty,tx)*180/Math.PI})`});
+}
+arrowAt(SEGMENTS[0].mark-20);
+SEGMENTS.forEach(S=>arrowAt(S.mark+STEP_AFTER));
+
+/* ---- band labels: PHYSICAL EFFECTS centred on 270°, MATERIAL + GEOMETRY on 90°.
+        The 90° arc is built backwards so the glyphs stay upright at the bottom. ---- */
+const defs=add(svg,"defs");
+function arcp(id,off,a0,a1){
+  const step=(a1>a0)?1.5:-1.5;
+  let d="M"+fmt(...P(rSeam(a0)+off,a0));
+  for(let s=a0;(step>0?s<=a1:s>=a1);s+=step)d+="L"+fmt(...P(rSeam(s)+off,s));
+  add(defs,"path",{id,d});
+}
+arcp("lblRose",-LANEW*0.5,220,320);
+arcp("lblBlue", LANEW*0.5,112.5,57.5);
+let t2=add(svg,"text",{"font-size":50,"font-weight":700,fill:"#7A2540","text-anchor":"middle"});
+add(t2,"textPath",{href:"#lblRose",startOffset:"50%"},"PHYSICAL EFFECTS");
+let t1=add(svg,"text",{"font-size":50,"font-weight":700,fill:"#2A2F6B","text-anchor":"middle"});
+add(t1,"textPath",{href:"#lblBlue",startOffset:"50%"},"MATERIAL + GEOMETRY");
+
+/* ---------------- centre disc ---------------- */
+const c=add(svg,"g");
+add(c,"circle",{cx:CX,cy:CY,r:R_DISC,fill:"#fff"});
+add(c,"path",{d:`M${CX-R_DISC} ${CY} A${R_DISC} ${R_DISC} 0 0 1 ${CX+R_DISC} ${CY}`,
+  fill:"none",stroke:"#3050C0","stroke-width":3.4});
+add(c,"path",{d:`M${CX+R_DISC} ${CY} A${R_DISC} ${R_DISC} 0 0 1 ${CX-R_DISC} ${CY}`,
+  fill:"none",stroke:"#C03030","stroke-width":3.4});
+add(c,"line",{x1:CX-R_DISC,y1:CY,x2:CX+R_DISC,y2:CY,stroke:"var(--line)","stroke-width":1.8});
+add(c,"line",{x1:CX,y1:CY,x2:CX,y2:CY+R_DISC,stroke:"var(--line)","stroke-width":1.8});
+
+/* Every effect image renders at the SAME width W. The box is made tall (W*2) and
+   the image is top-aligned with meet, so width is always the limiting dimension:
+   each image shows full height, uncropped, all sharing one width. cy is the box TOP. */
+function slot(parent,id,cx,cyTop,W){
+  const boxH=W*2, x=cx-W/2, y=cyTop;
+  const src=EFFECT_IMGS[id]||("assets/effects/"+id+".png");
+  const img=add(parent,"image",{href:src,x:x,y:y,width:W,height:boxH,
+    preserveAspectRatio:"xMidYMin meet"});   /* fit to width, align to top, no crop */
+  const lbl=add(parent,"text",{class:"svg-ph-lbl","text-anchor":"middle",x:cx,y:y-14},id);
+  img.addEventListener("error",()=>{
+    img.remove();
+    const h=W*0.8;                             /* placeholder box aspect ~5:4 */
+    add(parent,"rect",{class:"svg-ph",x:x,y:y,width:W,height:h,rx:7});
+    const k=Math.min(W,h)/3, mx=cx, my=y+h/2;
+    add(parent,"path",{d:`M${mx-k} ${my+k*0.55} L${mx-k*0.3} ${my-k*0.4} L${mx+k*0.25} ${my+k*0.3}
+      L${mx+k*0.6} ${my-k*0.2} L${mx+k} ${my+k*0.4}`,
+      fill:"none",stroke:"var(--ph-line)","stroke-width":2.2});
+    add(parent,"circle",{cx:mx-k*0.8,cy:my-k*0.65,r:k*0.24,fill:"var(--ph-line)"});
+  });
+}
+/* place the effect slots along a circle inside the disc: Physical Effects across
+   the full upper 180° (blue), Material across a lower-left 90° arc and Geometry
+   across a lower-right 90° arc (red). Within each arc the i-th of n slots sits at
+   span·i/(n+1), i.e. evenly inset from the arc endpoints. */
+const EFF_R=330;                                  /* radius of the slot ring */
+const EFF_W=132;                                  /* shared width of every effect image */
+const slotAt=(id,angDeg,w,r=EFF_R)=>{
+  const a=rad(angDeg);
+  const cx=CX+r*Math.cos(a), cy=CY-r*Math.sin(a);
+  slot(c, id, cx, cy-w*0.4, w);                   /* cy-w*0.4 ≈ centre the image on the ring */
+};
+/* P1..P5 across the top. P5 is drawn LAST so it renders on top of P4 where they meet. */
+/* positions fixed by index 0..4; draw order swaps P4 and P5 so P4 renders on top */
+{const n=5, order=["P1","P2","P3","P5","P4"], pos={P1:0,P2:1,P3:2,P4:3,P5:4};
+ order.forEach(id=>slotAt(id, 180-180*(pos[id]+1)/(n+1), EFF_W));}
+/* "Physical Effects" sits at the base of the upper arc, on the centre divider */
+add(c,"text",{x:CX,y:CY-30,"text-anchor":"middle","font-size":50,"font-weight":700},"Physical Effects");
+/* Material across lower-left (centred 225°, 120° span), Geometry lower-right (centred 315°) */
+{const n=3,span=120,st=225-span/2;["M1","M2","M3"].forEach((id,i)=>slotAt(id, st+span*(i+1)/(n+1), EFF_W));}
+{const n=3,span=120,st=315-span/2;["G1","G2","G3"].forEach((id,i)=>slotAt(id, st+span*(i+1)/(n+1), EFF_W));}
+add(c,"text",{x:CX-120,y:CY+70,"text-anchor":"middle","font-size":46,"font-weight":700},"Material");
+add(c,"text",{x:CX+120,y:CY+70,"text-anchor":"middle","font-size":46,"font-weight":700},"Geometry");
+
+/* ---------------- fields, nodes, level markers ---------------- */
+const cards=document.getElementById("cards");
+const panelA=document.getElementById("panelA");
+const R_ICON=78, R_LBL=76, PILL_R=62, DOT_R=14;
+const ICON_W=150, ICON_H=120;
+const segEls=[],pillEls={};
+let hideTimer=null,openIdx=-1;
+
+SEGMENTS.forEach((S,si)=>{
+  const g=add(svg,"g",{class:"seg",tabindex:0,role:"button",
+    "aria-label":`Level ${S.level} field — ${S.tasks.map(t=>t.name).join(", ")}`});
+  segEls.push(g);
+
+  const fOut=s=>rSeam(s)+wBlue(s)+R_ICON+50, fIn=s=>rSeam(s)-wRose(s)-14;
+  add(g,"path",{class:"seg-glow",d:ribbonPath(fOut,fIn,S.s0,S.s1)});
+  add(g,"path",{class:"seg-field",d:ribbonPath(fOut,fIn,S.s0,S.s1)});
+
+  const a0=S.s0+STEP_AFTER, len=S.s1-a0, n=S.tasks.length;
+  S.tasks.forEach((T,ti)=>{
+    const s=(T.sAt!=null)?T.sAt:a0+len*(ti+1)/(n+1);
+    const[dx,dy]=P(rSeam(s),s);
+    const rIcon=rSeam(s)+wBlue(s)+R_ICON;
+    const iyOff=T.iconDy||0;                         /* optional downward shift of the icon */
+    const[ix,iyBase]=P(rIcon,s);
+    const iy=iyBase+iyOff;
+    const nd=add(g,"g",{class:"node"});
+    add(nd,"line",{x1:dx,y1:dy,x2:ix,y2:iy,stroke:"var(--ink)","stroke-width":2});
+    add(nd,"circle",{class:"dot",cx:dx,cy:dy,r:DOT_R});
+    const iconSrc=T.img||("assets/tasks/"+(Array.isArray(T.name)?T.name.join("_"):String(T.name))
+      .toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"")+".png");
+    const ig=add(nd,"g",{class:"icon"});
+    add(ig,"image",{href:iconSrc,x:ix-ICON_W/2,y:iy-ICON_W,
+      width:ICON_W,height:ICON_W*2,preserveAspectRatio:"xMidYMid meet"})
+      .addEventListener("error",function(){
+        this.remove();
+        const h=ICON_W*0.8;
+        add(ig,"rect",{class:"svg-ph",x:ix-ICON_W/2,y:iy-h/2,width:ICON_W,height:h,rx:7});
+        const k=h/3;
+        add(ig,"path",{d:`M${ix-k} ${iy+k*0.55} L${ix-k*0.3} ${iy-k*0.4} L${ix+k*0.25} ${iy+k*0.3}
+          L${ix+k*0.6} ${iy-k*0.2} L${ix+k} ${iy+k*0.4}`,
+          fill:"none",stroke:"var(--ph-line)","stroke-width":2.4});
+        add(ig,"circle",{cx:ix-k*0.8,cy:iy-k*0.65,r:k*0.24,fill:"var(--ph-line)"});
+      });
+    /* the name sits beside the picture — outward side, vertically centred */
+    const onRight=Math.cos(rad(-s))>=0;
+    const lx=onRight ? ix+ICON_W/2+16 : ix-ICON_W/2-16;
+    const lines=Array.isArray(T.name)?T.name:[T.name];
+    const LH=46;                                   /* line height in svg units */
+    const t=add(nd,"text",{class:"lbl",x:lx,y:iy-(lines.length-1)*LH/2,
+      "text-anchor":onRight?"start":"end","dominant-baseline":"middle"});
+    lines.forEach((ln,k)=>add(t,"tspan",{x:lx,dy:k?LH:0},ln));
+  });
+
+  const[px,py]=P(rSeam(S.mark),S.mark);
+  const pg=add(svg,"g",{class:"lvl-pill"});
+  add(pg,"circle",{class:"ring",cx:px,cy:py,r:PILL_R,fill:"#fff",stroke:"var(--ink)","stroke-width":3});
+  add(pg,"text",{class:"num mono-t",x:px,y:py+2,"text-anchor":"middle","dominant-baseline":"middle"},S.level);
+  add(pg,"text",{class:"cap mono-t",x:px,y:py-PILL_R-18,"text-anchor":"middle"},"LEVEL");
+  pillEls[S.level]=pg;
+
+  const show=()=>{clearTimeout(hideTimer);openSeg(si)};
+  const hide=()=>{hideTimer=setTimeout(closeSeg,200)};
+  g.addEventListener("mouseenter",show);
+  g.addEventListener("mouseleave",hide);
+  g.addEventListener("focus",show);
+  g.addEventListener("blur",hide);
+  g.addEventListener("click",e=>{e.stopPropagation();openIdx===si?closeSeg():show()});
+});
+cards.addEventListener("mouseenter",()=>clearTimeout(hideTimer));
+cards.addEventListener("mouseleave",()=>{hideTimer=setTimeout(closeSeg,200)});
+document.addEventListener("click",closeSeg);
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeSeg();hidePop()}});
+
+/* ---------------- open / close ---------------- */
+function openSeg(si){
+  const S=SEGMENTS[si];openIdx=si;
+  segEls.forEach((el,i)=>el.classList.toggle("hot",i===si));
+  hotEls.forEach((el,i)=>el.classList.toggle("on",i<=si));
+  stage.classList.add("linked");
+  panelA.classList.add("linked");
+  figure.classList.toggle("tip",si===SEGMENTS.length-1);
+  panelA.querySelectorAll(".lvl-card").forEach(el=>
+    el.classList.toggle("hot",el.dataset.level===S.level));
+  Object.entries(pillEls).forEach(([n,el])=>el.classList.toggle("hot",n===S.level));
+
+  cards.innerHTML=S.tasks.map(T=>`
+    <div class="vcard">
+      <div class="vid">${vidHTML(T.video)}</div>
+      <div class="body">
+        <div class="row1"><h3>${Array.isArray(T.name)?T.name.join(" "):T.name}</h3><span class="lvl">LVL ${S.level}</span></div>
+      </div>
+    </div>`).join("");
+
+  const below=S.place==="below";
+  const topL=S.place==="top";
+  cards.classList.toggle("rowed",below || topL);
+  const sMid=(S.s0+S.s1)/2;
+  const fieldOnRight=Math.cos(rad(-sMid))>=0;
+  const vb=svg.viewBox.baseVal, sr=stage.getBoundingClientRect();
+  const sx=sr.width/vb.width, sy=sr.height/vb.height;
+  const[mx,my]=P(rSeam(sMid),sMid);
+  cards.classList.add("show");cards.setAttribute("aria-hidden","false");
+  requestAnimationFrame(()=>{
+    const h=cards.offsetHeight,w=cards.offsetWidth;
+    let left,top;
+    if(below){
+      left=cl(mx*sx-w/2, 18, Math.max(18,sr.width-w-18));
+      top =cl(my*sy+340, 14, Math.max(14,sr.height-h-14));
+    }else if(topL){
+      left=cl(mx*sx-w/2, 18, Math.max(18,sr.width-w-18));
+      top =cl(my*sy-60-4*h , 14, Math.max(14,sr.height-2*h-14));
+    }else{
+      left=fieldOnRight ? 18 : Math.max(18,sr.width-w-18);
+      top =cl(my*sy-h/2, 14, Math.max(14,sr.height-h-14));
+    }
+    cards.style.left=left+"px";cards.style.top=top+"px";
+  });
+}
+function closeSeg(){
+  openIdx=-1;
+  segEls.forEach(el=>el.classList.remove("hot"));
+  hotEls.forEach(el=>el.classList.remove("on"));
+  stage.classList.remove("linked");
+  panelA.classList.remove("linked");
+  figure.classList.remove("tip");
+  panelA.querySelectorAll(".lvl-card.hot").forEach(el=>el.classList.remove("hot"));
+  Object.values(pillEls).forEach(el=>el.classList.remove("hot"));
+  cards.classList.remove("show");cards.setAttribute("aria-hidden","true");
+}
+const segByLevel=Object.fromEntries(SEGMENTS.map((s,i)=>[s.level,i]));
+panelA.querySelectorAll(".lvl-card").forEach(el=>{
+  const id=el.dataset.level;
+  const enter=()=>{
+    if(segByLevel[id]!=null){clearTimeout(hideTimer);openSeg(segByLevel[id])}
+    else{panelA.classList.add("linked");el.classList.add("hot")}
+  };
+  el.addEventListener("mouseenter",enter);
+  el.addEventListener("mouseleave",closeSeg);
+  el.addEventListener("focus",enter);
+  el.addEventListener("blur",closeSeg);
+});
+
+/* ---------------- stems ---------------- */
+const LANE_PCT = LANEW/W*100;
+const COL_PCT  = cl(X_COL/W*100, LANE_PCT+1, 99-LANE_PCT);
+document.querySelectorAll(".bridge").forEach(b=>{
+  const st=b.querySelector(".stem"), hd=b.querySelector(".stemHead");
+  st.style.left=(COL_PCT-LANE_PCT)+"%";
+  st.style.width=(2*LANE_PCT)+"%";
+  hd.style.left=COL_PCT+"%";
+});
+
+/* ---------------- entrance ---------------- */
+const io=new IntersectionObserver(es=>{for(const e of es){if(e.isIntersecting){
+  stage.classList.add("active");
+  svg.querySelectorAll(".node").forEach((n,i)=>n.style.transitionDelay=(0.5+i*0.07)+"s");
+  svg.querySelectorAll(".lvl-pill").forEach((n,i)=>n.style.transitionDelay=(0.3+i*0.1)+"s");
+  io.disconnect();
+}}},{threshold:0.2});
+io.observe(stage);
+/* =====================================================================
+   DUMMY SECTIONS — benchmark grid, per-object explorer, workflow tiles.
+   Object names follow the file naming already used for the plots, so the
+   placeholder paths below are the real ones once the assets are dropped in.
+===================================================================== */
+const OBJECTS=[
+  "6pointsocket24_1","6pointsocket32_1","6pointsocket41_1","12pointsocket24_1",
+  "12pointsocket36_1","abuse30_3","elliptoid_1","europlug_1","gb2099_1","hdmi_1",
+  "hexkey6_1","hexkey12_1","hexkey17_1","hexkey19_1","iecc13_1","padlockburgwächter_2",
+  "schuko_1","schuko_2","trrs6_35mm_aluminum_rod","typel_1","usba_1","usbc_1"
+];
+/* pretty display names (file paths still use the stem above) */
+const TITLE={
+  "elliptoid_1":"ellipsoid","hexkey17_1":"hexkey-17","hexkey19_1":"hexkey-19",
+  "hexkey6_1":"hexkey-6","hexkey12_1":"hexkey-12","hdmi_1":"hdmi","iecc13_1":"iec-c13",
+  "trrs6_35mm_aluminum_rod":"trrs-6.35mm aluminum rod","abuse30_3":"abus-e30",
+  "padlockburgwächter_2":"padlock-burgwächter","europlug_1":"europlug","schuko_1":"schuko",
+  "schuko_2":"schuko 2","gb2099_1":"gb-2099","typel_1":"type-l",
+  "6pointsocket24_1":"6point-socket-24","12pointsocket24_1":"12point-socket-24",
+  "6pointsocket32_1":"6point-socket-32","12pointsocket36_1":"12point-socket-36",
+  "6pointsocket41_1":"6point-socket-41","usba_1":"usb-a","usbc_1":"usb-c"
+};
+const objTitle=o=>TITLE[o]||o;
+/* which view to show as the object photo (grid + hover cards): default z,
+   but these objects read better from the x view */
+const VIEW_X=new Set(["abuse30_3","hexkey6_1","hexkey12_1","hexkey17_1","hexkey19_1",
+  "padlockburgwächter_2","trrs6_35mm_aluminum_rod"]);
+const objView=o=>VIEW_X.has(o)?"x":"z";
+const objPhoto=o=>`${A_OBJ}${o}_${objView(o)}`;   /* path without extension */
+const phBox=(cls,big,small)=>
+  `<div class="ph ${cls}"><span class="big">${big}</span>${small?`<span>${small}</span>`:""}</div>`;
+/* image in a .ph box that hides on error, revealing the label underneath */
+const phImg=(cls,src,label)=>
+  `<div class="ph ${cls} phmedia"><img src="${src}" alt="${label}"
+     onerror="this.setAttribute('data-failed','')">
+     <span class="fb"><span class="big">${label}</span></span></div>`;
+const phVid=(cls,src,label,small)=>
+  `<div class="ph ${cls} phmedia"><video src="${src}" muted loop autoplay playsinline
+     onerror="this.setAttribute('data-failed','')"></video>
+     <span class="fb"><span class="big">${label}</span>${small?`<span>${small}</span>`:""}</span></div>`;
+/* asset path roots */
+const A_PLOT="assets/plots/", A_OBJ="assets/objects/", A_VID="assets/videos/";
+
+/* ---- benchmark grid ---- */
+const objGrid=document.getElementById("objGrid");
+const objProfile=document.getElementById("objProfile");
+if(objGrid){
+  OBJECTS.forEach((o,i)=>{
+    const el=document.createElement("div");
+    el.className="obj";el.tabIndex=0;
+    el.innerHTML=`<div class="ph sq phmedia" style="padding:0;overflow:hidden">
+        <img src="${objPhoto(o)}.png" alt="${objTitle(o)}" data-base="${objPhoto(o)}" data-ext="png"
+          onerror="objViewErr(this)"
+          style="width:100%;height:100%;object-fit:cover;display:block">
+      </div><div class="nm">${objTitle(o)}</div>`;
+    const pick=()=>{
+      objGrid.querySelectorAll(".obj").forEach(n=>n.classList.remove("sel"));
+      el.classList.add("sel");showProfile(o);
+    };
+    el.addEventListener("click",pick);
+    el.addEventListener("keydown",e=>{if(e.key==="Enter")pick()});
+    objGrid.appendChild(el);
+    if(i===0)el.classList.add("sel");
+  });
+  showProfile(OBJECTS[0]);
+}
+function showProfile(o){
+  if(!objProfile)return;
+  const panel=(ax)=>{
+    const base=`${A_OBJ}${o}_${ax}`;
+    return `<div style="position:relative;width:100%;padding-bottom:100%;
+      border-radius:8px;overflow:hidden;background:var(--ph-bg)">
+      <img src="${base}.png" alt="${objTitle(o)} — ${ax} view" data-base="${base}" data-ext="png"
+        style="position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;object-fit:cover;display:block"
+        onerror="objViewErr(this)"></div>`;
+  };
+  objProfile.innerHTML=`
+    <div class="hd">
+      <h4>${objTitle(o)}</h4>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+      ${panel("x")}${panel("y")}${panel("z")}
+    </div>`;
+}
+/* try .png, then .jpg, then .jpeg, then give up cleanly */
+function objViewErr(img){
+  const base=img.getAttribute("data-base"), ext=img.getAttribute("data-ext");
+  const next={png:"jpg",jpg:"jpeg",jpeg:null}[ext];
+  if(next){ img.setAttribute("data-ext",next); img.src=base+"."+next; }
+  else{ img.style.display="none"; }
+}
+
+/* ---- per-object explorer ---- */
+const expObj=document.getElementById("expObj");
+if(expObj){
+  OBJECTS.forEach(o=>expObj.insertAdjacentHTML("beforeend",`<option value="${o}">${objTitle(o)}</option>`));
+  const expAlg=document.getElementById("expAlg"), expDom=document.getElementById("expDom");
+  const refresh=()=>{
+    const o=expObj.value, a=expAlg.value, d=expDom.value;
+    const set=(id,file)=>{const n=document.getElementById(id);
+      n.classList.add("phmedia");
+      n.innerHTML=`<img src="${A_PLOT}${file}" alt="${file}"
+        onerror="this.setAttribute('data-failed','')">
+        <span class="fb"><span class="big">IMG · ${A_PLOT}${file}</span></span>`};
+    set("expPlotA",`${o}_SVM_PI_failure_${d==="force"?"cost":"success"}.png`);
+    set("expPlotB",`${o}_${a}_${d}.png`);
+    set("expPlotC",`${o}_SVM_PI_success_3D.png`);
+    set("expPlotD",`${o}_SVM_PI_cost_3D.png`);
+  };
+  [expObj,expAlg,expDom].forEach(el=>el.addEventListener("change",refresh));
+  refresh();
+}
+
+/* ---- industrial workflow tiles ---- */
+const indGrid=document.getElementById("indGrid");
+const indWrap=document.getElementById("indWrap"), indPop=document.getElementById("indPop");
+if(indGrid){
+  D_CARDS.forEach(D=>{
+    const slug=D.name.toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"");
+    const fig=document.createElement("figure");
+    fig.tabIndex=0;
+    fig.innerHTML=`${phVid("v16",A_VID+"workflow_"+slug+".mp4","","")}
+       <figcaption><b>${D.name}.</b> ${D.sr}% success · ${D.hum}% of human throughput.</figcaption>`;
+    const open=()=>showPopIn(indPop,indWrap,
+      {name:D.name,video:A_VID+"workflow_"+slug+".mp4",note:`${D.sr}% · ${D.hum}% of human`},fig);
+    fig.addEventListener("mouseenter",open);
+    fig.addEventListener("focus",open);
+    fig.addEventListener("mouseleave",()=>hidePopIn(indPop));
+    fig.addEventListener("blur",()=>hidePopIn(indPop));
+    indGrid.appendChild(fig);
+  });
+}
+
+
+
+/* =====================================================================
+   FIGURE 2 — interactive success rate vs insertion speed
+   Ported from Model_success_performance_comparison.py: same object IDs,
+   colourblind palette, per-level markers, and the covariance ("variance")
+   ellipse recipe. Success rates are the REAL Table 1 values. The script
+   derives speed from avg_successful_trajectory_length in DRL_results.json,
+   which is not bundled here, so speeds are PLACEHOLDER (level mean from
+   panel (a), correlated with success). Drop the JSON in to make them real.
+===================================================================== */
+
+const F2_REAL=[{"id": 1, "nm": "12point-socket-24", "stem": "12pointsocket24_1", "ppo": {"velocity": [[0.0, 0.0], [0.0, 0.0], [14.0, 0.877], [17.0, 0.605]], "force": [[0.0, 0.0], [0.0, 0.0], [14.3, 0.885]]}, "sac": {"velocity": [[0.0, 0.0], [0.0, 0.0], [4.7, 0.973], [27.3, 0.617]], "force": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}},
+{"id": 2, "nm": "12point-socket-36", "stem": "12pointsocket36_1", "ppo": {"velocity": [[0.0, 0.0], [0.0, 0.0], [59.7, 0.968], [100.0, 0.406]], "force": [[23.0, 0.687], [70.0, 0.778], [15.7, 1.033]]}, "sac": {"velocity": [[0.0, 0.0], [0.0, 0.0], [66.0, 1.192], [93.0, 0.999]], "force": [[19.3, 0.372], [35.3, 0.457], [6.7, 1.066]]}},
+{"id": 3, "nm": "6point-socket-24", "stem": "6pointsocket24_1", "ppo": {"velocity": [[7.3, 1.609], [6.3, 1.507], [46.0, 1.01], [29.0, 1.041]], "force": [[1.3, 1.263], [0.3, 3.012], [22.0, 0.886]]}, "sac": {"velocity": [[7.3, 1.109], [1.3, 1.072], [8.3, 1.26], [55.7, 0.955]], "force": [[0.0, 0.0], [0.0, 0.0], [36.7, 0.818]]}},
+{"id": 4, "nm": "6point-socket-32", "stem": "6pointsocket32_1", "ppo": {"velocity": [[0.0, 0.0], [0.3, 0.912], [88.0, 0.984], [98.0, 1.218]], "force": [[1.3, 0.906], [0.0, 0.0], [95.7, 2.386]]}, "sac": {"velocity": [[0.0, 0.0], [null, null], [68.3, 1.061], [96.0, 1.073]], "force": [[1.0, 0.354], [0.7, 0.449], [96.7, 1.608]]}},
+{"id": 5, "nm": "6point-socket-41", "stem": "6pointsocket41_1", "ppo": {"velocity": [[0.0, 0.0], [0.3, 0.798], [86.0, 0.869], [94.7, 0.683]], "force": [[32.3, 0.419], [16.7, 0.348], [82.0, 0.883]]}, "sac": {"velocity": [[0.0, 0.0], [0.3, 0.611], [65.7, 0.929], [77.3, 0.629]], "force": [[32.7, 0.382], [20.0, 0.329], [63.7, 0.577]]}},
+{"id": 6, "nm": "abus-e30", "stem": "abuse30_3", "ppo": {"velocity": [[0.0, 0.0], [0.3, 0.544], [80.7, 0.575], [63.0, 0.436]], "force": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}, "sac": {"velocity": [[0.0, 0.0], [0.0, 0.0], [89.7, 0.716], [92.3, 0.536]], "force": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}},
+{"id": 7, "nm": "ellipsoid", "stem": "elliptoid_1", "ppo": {"velocity": [[1.0, 0.683], [0.0, 0.0], [99.0, 1.249], [100.0, 1.128]], "force": [[52.0, 0.987], [68.7, 0.626], [99.0, 1.923]]}, "sac": {"velocity": [[0.0, 0.0], [0.0, 0.0], [99.7, 1.267], [100.0, 1.43]], "force": [[66.3, 0.525], [69.7, 0.438], [99.3, 1.854]]}},
+{"id": 8, "nm": "europlug", "stem": "europlug_1", "ppo": {"velocity": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [11.7, 0.654]], "force": [[0.0, 0.0], [0.0, 0.0], [62.0, 1.708]]}, "sac": {"velocity": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [32.0, 0.675]], "force": [[0.0, 0.0], [0.0, 0.0], [43.0, 1.456]]}},
+{"id": 9, "nm": "gb-2099", "stem": "gb2099_1", "ppo": {"velocity": [[0.0, 0.0], [0.0, 0.0], [25.7, 0.485], [0.0, 0.0]], "force": [[0.0, 0.0], [0.0, 0.0], [5.3, 0.719]]}, "sac": {"velocity": [[0.0, 0.0], [0.0, 0.0], [2.7, 0.593], [8.3, 0.479]], "force": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}},
+{"id": 10, "nm": "hdmi", "stem": "hdmi_1", "ppo": {"velocity": [[0.3, 1.437], [0.7, 0.717], [0.0, 0.0], [0.3, 2.155]], "force": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}, "sac": {"velocity": [[0.0, 0.0], [0.3, 1.04], [24.7, 0.902], [0.7, 0.658]], "force": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}},
+{"id": 11, "nm": "hexkey-12", "stem": "hexkey12_1", "ppo": {"velocity": [[0.3, 0.473], [4.3, 0.517], [0.0, 0.0], [0.7, 0.794]], "force": [[0.0, 0.0], [0.0, 0.0], [35.0, 0.59]]}, "sac": {"velocity": [[1.3, 0.463], [1.7, 0.81], [0.0, 0.0], [5.0, 0.388]], "force": [[0.0, 0.0], [0.0, 0.0], [9.7, 0.497]]}},
+{"id": 12, "nm": "hexkey-17", "stem": "hexkey17_1", "ppo": {"velocity": [[0.3, 0.344], [0.3, 0.753], [0.0, 0.0], [30.7, 1.608]], "force": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}, "sac": {"velocity": [[0.3, 0.381], [1.0, 1.066], [0.3, 1.355], [83.3, 1.259]], "force": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}},
+{"id": 13, "nm": "hexkey-19", "stem": "hexkey19_1", "ppo": {"velocity": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]], "force": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}, "sac": {"velocity": [[0.0, 0.0], [0.0, 0.0], [0.7, 1.059], [0.0, 0.0]], "force": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}},
+{"id": 14, "nm": "hexkey-6", "stem": "hexkey6_1", "ppo": {"velocity": [[2.3, 0.816], [1.7, 0.878], [0.0, 0.0], [0.0, 0.0]], "force": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}, "sac": {"velocity": [[0.7, 0.486], [1.7, 0.6], [0.0, 0.0], [0.0, 0.0]], "force": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}},
+{"id": 15, "nm": "iec-c13", "stem": "iecc13_1", "ppo": {"velocity": [[0.0, 0.0], [0.3, 0.667], [16.3, 0.851], [97.7, 0.906]], "force": [[0.0, 0.0], [2.3, 0.526], [11.3, 0.71]]}, "sac": {"velocity": [[0.0, 0.0], [0.0, 0.0], [20.7, 0.878], [53.0, 0.776]], "force": [[0.0, 0.0], [0.0, 0.0], [3.3, 0.548]]}},
+{"id": 16, "nm": "padlock-burgwächter", "stem": "padlockburgwächter_2", "ppo": {"velocity": [[0.0, 0.0], [0.0, 0.0], [1.0, 0.474], [23.0, 0.908]], "force": [[0.0, 0.0], [0.0, 0.0], [0.3, 2.786]]}, "sac": {"velocity": [[0.0, 0.0], [0.0, 0.0], [2.3, 0.474], [null, null]], "force": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}},
+{"id": 17, "nm": "schuko", "stem": "schuko_1", "ppo": {"velocity": [[0.0, 0.0], [0.0, 0.0], [0.3, 0.669], [33.3, 0.742]], "force": [[0.0, 0.0], [0.0, 0.0], [27.7, 0.657]]}, "sac": {"velocity": [[0.0, 0.0], [0.0, 0.0], [12.7, 1.058], [20.7, 1.031]], "force": [[0.0, 0.0], [0.0, 0.0], [null, null]]}},
+{"id": 18, "nm": "schuko-2", "stem": "schuko_2", "ppo": {"velocity": [[0.0, 0.0], [0.0, 0.0], [3.0, 0.478], [0.3, 0.565]], "force": [[0.0, 0.0], [0.0, 0.0], [6.0, 0.923]]}, "sac": {"velocity": [[0.0, 0.0], [0.0, 0.0], [1.3, 0.996], [1.7, 0.675]], "force": [[0.0, 0.0], [0.0, 0.0], [1.0, 0.805]]}},
+{"id": 19, "nm": "trrs-6.35mm aluminum rod", "stem": "trrs6_35mm_aluminum_rod", "ppo": {"velocity": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [40.7, 0.942]], "force": [[0.0, 0.0], [0.0, 0.0], [19.0, 0.645]]}, "sac": {"velocity": [[0.3, 0.443], [0.3, 0.818], [0.0, 0.0], [73.3, 0.763]], "force": [[0.0, 0.0], [0.0, 0.0], [15.0, 0.58]]}},
+{"id": 20, "nm": "type-l", "stem": "typel_1", "ppo": {"velocity": [[0.0, 0.0], [0.0, 0.0], [48.3, 0.735], [66.0, 0.835]], "force": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}, "sac": {"velocity": [[0.0, 0.0], [0.0, 0.0], [20.7, 0.87], [40.7, 0.607]], "force": [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]}},
+{"id": 21, "nm": "usb-a", "stem": "usba_1", "ppo": {"velocity": [[1.0, 0.725], [2.0, 1.226], [7.7, 0.701], [15.0, 0.559]], "force": [[1.7, 1.088], [2.3, 1.144], [82.0, 1.082]]}, "sac": {"velocity": [[0.3, 1.215], [0.0, 0.0], [0.0, 0.0], [23.0, 1.161]], "force": [[0.0, 0.0], [0.0, 0.0], [64.0, 1.088]]}},
+{"id": 22, "nm": "usb-c", "stem": "usbc_1", "ppo": {"velocity": [[2.0, 1.732], [13.0, 1.674], [0.7, 0.45], [1.0, 0.605]], "force": [[0.0, 0.0], [0.0, 0.0], [1.7, 0.34]]}, "sac": {"velocity": [[5.3, 1.101], [11.0, 1.469], [4.3, 0.69], [0.7, 0.53]], "force": [[0.0, 0.0], [0.3, 1.678], [null, null]]}}];
+
+/* object_ids from the script: sorted OBJECT_MAPPING values, 1-based.
+   [id, object_name, file_stem, [force II,III,IV], [velocity II,III,IV,V]] */
+const F2_OBJ=[
+ [1,"12point-socket-24","12pointsocket24_1",[0.0,0.0,14.3],[0.0,0.0,14.0,27.3]],
+ [2,"12point-socket-36","12pointsocket36_1",[23.0,70.0,15.7],[0.0,0.0,66.0,100.0]],
+ [3,"6point-socket-24","6pointsocket24_1",[1.3,0.3,36.7],[7.3,6.3,46.0,55.7]],
+ [4,"6point-socket-32","6pointsocket32_1",[1.3,0.7,96.7],[0.0,0.3,88.0,98.0]],
+ [5,"6point-socket-41","6pointsocket41_1",[32.7,20.0,82.0],[0.0,0.3,86.0,94.7]],
+ [6,"abus-e30","abuse30_3",[0.0,0.0,0.0],[0.0,0.3,89.7,92.3]],
+ [7,"ellipsoid","elliptoid_1",[66.3,69.7,99.3],[1.0,0.0,99.7,100.0]],
+ [8,"europlug","europlug_1",[0.0,0.0,62.0],[0.0,0.0,0.0,32.0]],
+ [9,"gb-2099","gb2099_1",[0.0,0.0,5.3],[0.0,0.0,25.7,8.3]],
+ [10,"hdmi","hdmi_1",[0.0,0.0,0.0],[0.3,0.7,24.7,0.7]],
+ [11,"hexkey-12","hexkey12_1",[0.0,0.0,35.0],[1.3,4.3,0.0,5.0]],
+ [12,"hexkey-17","hexkey17_1",[0.0,0.0,0.0],[0.3,1.0,0.3,83.3]],
+ [13,"hexkey-19","hexkey19_1",[0.0,0.0,0.0],[0.0,0.0,0.7,0.0]],
+ [14,"hexkey-6","hexkey6_1",[0.0,0.0,0.0],[2.3,1.7,0.0,0.0]],
+ [15,"iec-c13","iecc13_1",[0.0,2.3,11.3],[0.0,0.3,20.7,97.7]],
+ [16,"padlock-burgwächter","padlockburgwächter_2",[0.0,0.0,0.3],[0.0,0.0,2.3,23.0]],
+ [17,"schuko","schuko_1",[0.0,0.0,27.7],[0.0,0.0,12.7,33.3]],
+ [18,"schuko-2","schuko_2",[0.0,0.0,6.0],[0.0,0.0,3.0,1.7]],
+ [19,"trrs-6.35mm","trrs6_35mm_aluminum_rod",[0.0,0.0,19.0],[0.3,0.3,0.0,73.3]],
+ [20,"type-l","typel_1",[0.0,0.0,0.0],[0.0,0.0,48.3,66.0]],
+ [21,"usb-a","usba_1",[1.7,2.3,82.0],[1.0,2.0,7.7,23.0]],
+ [22,"usb-c","usbc_1",[0.0,0.3,1.7],[5.3,13.0,4.3,1.0]],
+];
+/* levels per domain: index into the success arrays + mean speed from panel (a).
+   Colours/markers follow the script: palette index = position in the group,
+   markers = ["o","v","s","^"] i.e. circle, down-triangle, square, up-triangle. */
+const F2_LV={
+  velocity:[{lvl:"II",i:0,spd:0.35,col:"#4A93C4",mk:"o"},
+            {lvl:"III",i:1,spd:0.51,col:"#E0973A",mk:"v"},
+            {lvl:"IV",i:2,spd:0.72,col:"#3FAE8E",mk:"s"},
+            {lvl:"V",i:3,spd:0.71,col:"#D06B3C",mk:"^"}],
+  force:   [{lvl:"II",i:0,spd:0.22,col:"#4A93C4",mk:"o"},
+            {lvl:"III",i:1,spd:0.38,col:"#E0973A",mk:"v"},
+            {lvl:"IV",i:2,spd:0.78,col:"#3FAE8E",mk:"s"}],
+};
+const F2_TACTILE={col:"#2CC9D6",mk:"D"};
+/* Table 1 is best-of PPO/SAC; rescale to the per-algorithm means quoted in text */
+const F2_SCALE={velocity:{ppo:37.4/46.2,sac:40.2/46.2},force:{ppo:26.3/27.0,sac:20.0/27.0}};
+const F2_ASSET="assets/objects/";          /* drop object photos here as <stem>.jpg */
+const F2_OFF=new Set();
+let F2_VIEW="objects";  /* "objects" | "dist" */
+
+const f2svg=document.getElementById("f2svg");
+if(f2svg){
+  const f2alg=document.getElementById("f2alg"),f2dom=document.getElementById("f2dom"),
+        f2leg=document.getElementById("f2legend"),f2note=document.getElementById("f2note"),
+        f2card=document.getElementById("f2card"),f2wrap=document.getElementById("f2wrap"),
+        f2view=document.getElementById("f2view");
+  const NSU="http://www.w3.org/2000/svg";
+  const el=(t,a={},txt=null)=>{const n=document.createElementNS(NSU,t);
+    for(const k in a)n.setAttribute(k,a[k]);if(txt!=null)n.textContent=txt;return n};
+  const rng=s=>{let x=(s>>>0)||1;return()=>{x^=x<<13;x^=x>>>17;x^=x<<5;x>>>=0;return x/4294967296}};
+
+  /* marker path generator (screen units) */
+  function marker(mk,x,y,r){
+    if(mk==="o") return el("circle",{cx:x,cy:y,r:r});
+    if(mk==="s") return el("rect",{x:x-r,y:y-r,width:2*r,height:2*r,rx:1.5});
+    if(mk==="^") return el("path",{d:`M${x} ${y-r*1.15} L${x+r*1.1} ${y+r*0.85} L${x-r*1.1} ${y+r*0.85} Z`});
+    if(mk==="v") return el("path",{d:`M${x} ${y+r*1.15} L${x+r*1.1} ${y-r*0.85} L${x-r*1.1} ${y-r*0.85} Z`});
+    /* D — diamond */
+    return el("path",{d:`M${x} ${y-r*1.3} L${x+r*1.2} ${y} L${x} ${y+r*1.3} L${x-r*1.2} ${y} Z`});
+  }
+
+  /* 2x2 covariance of arrays x,y */
+  function cov2(x,y){
+    const n=x.length,mx=x.reduce((a,b)=>a+b,0)/n,my=y.reduce((a,b)=>a+b,0)/n;
+    let sxx=0,syy=0,sxy=0;
+    for(let i=0;i<n;i++){const dx=x[i]-mx,dy=y[i]-my;sxx+=dx*dx;syy+=dy*dy;sxy+=dx*dy}
+    const d=Math.max(1,n-1);return{mx,my,sxx:sxx/d,syy:syy/d,sxy:sxy/d};
+  }
+  /* Variance distribution as a pixel-space ellipse. We map each data point to
+     pixels first, then take the covariance THERE — that keeps the aspect ratio
+     honest regardless of the axis scaling — and eigen-decompose to get the two
+     semi-axes and the rotation. n_std matches the script (2σ); MIN_X_VAR floors
+     the success-rate spread so the Tactile Skill still shows a thin sliver. */
+  function distEllipse(xsData,ysData,px,py,nStd,minXVarData,kx){
+    if(xsData.length<2)return null;
+    const X=xsData.map(px), Y=ysData.map(py);
+    const c=cov2(X,Y);
+    /* floor the x-variance, expressed in pixels */
+    const minPx=minXVarData*kx*kx;
+    let a=Math.max(c.sxx,minPx), b=c.sxy, d=Math.max(c.syy,1e-6);
+    /* eigenvalues of [[a,b],[b,d]] */
+    const tr=a+d, det=a*d-b*b, disc=Math.sqrt(Math.max(0,tr*tr/4-det));
+    const l1=tr/2+disc, l2=Math.max(tr/2-disc, 9);   /* floor minor axis (≈3px·3px) */
+    /* eigenvector angle of the larger eigenvalue */
+    const ang=Math.atan2(l1-a,b)||0;
+    return{cx:c.mx,cy:c.my,rx:nStd*Math.sqrt(Math.max(l1,0)),
+           ry:nStd*Math.sqrt(Math.max(l2,0)),deg:ang*180/Math.PI};
+  }
+
+  function draw(){
+    const alg=f2alg.value, dom=f2dom.value, lvls=F2_LV[dom], sc=F2_SCALE[dom][alg];
+    /* x limits -0.03..1.03 of full scale (-3%..103%) so points at 0 and 100 are
+       not glued to the spines, matching the figure's margins */
+    const W=1080,H=680,L=128,R=34,T=64,B=104, XMIN=-3, XMAX=103, YMAX=1.75;
+    const px=v=>L+((v-XMIN)/(XMAX-XMIN))*(W-L-R), py=v=>H-B-(v/YMAX)*(H-B-T);
+    const kx=(W-L-R)/(XMAX-XMIN), ky=-(H-B-T)/YMAX;
+    f2svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+    f2svg.innerHTML="";
+
+    /* clip everything drawn inside the plot to the axes rectangle */
+    const defs=el("defs",{});
+    const clip=el("clipPath",{id:"f2plotclip"});
+    clip.appendChild(el("rect",{x:L,y:T,width:W-L-R,height:H-B-T}));
+    defs.appendChild(clip);f2svg.appendChild(defs);
+    const plot=el("g",{"clip-path":"url(#f2plotclip)"});   /* data layer, clipped */
+
+    f2svg.appendChild(el("text",{class:"ttl",x:L,y:26},
+      `${alg.toUpperCase()} — ${dom==="force"?"force domain":"velocity domain"}`));
+    for(let i=0;i<=7;i++)f2svg.appendChild(el("line",{class:"grid",x1:L,y1:py(YMAX*i/7),x2:W-R,y2:py(YMAX*i/7)}));
+    for(let v=0;v<=100;v+=20)f2svg.appendChild(el("line",{class:"grid",x1:px(v),y1:T,x2:px(v),y2:H-B}));
+    f2svg.appendChild(el("line",{class:"barrier",x1:px(99),y1:T,x2:px(99),y2:H-B}));
+    f2svg.appendChild(el("text",{class:"anno",x:px(99)-10,y:T+22,"text-anchor":"end"},"99% barrier"));
+
+    const pts=[];   /* collect for hover: {x,y,obj,lvl,sr,spd} */
+
+    function levelPoints(Lv){
+      const xs=[],ys=[],meta=[];
+      F2_REAL.forEach(o=>{
+        const cell=o[alg][dom][Lv.i];       /* [success, speed] real */
+        if(!cell)return;
+        xs.push(cell[0]??0);ys.push(cell[1]??0);meta.push([o.id,o.nm,o.stem]);
+      });
+      return{xs,ys,meta};
+    }
+    function tactilePoints(){
+      /* Tactile Skill: 100% on every object; speed spread 0.5–1.3 exec/s as reported */
+      const xs=[],ys=[],meta=[]; const r=rng(555+(dom==="force"?3:9));
+      F2_REAL.forEach(o=>{const spd=0.55+r()*0.72;xs.push(100);ys.push(spd);meta.push([o.id,o.nm,o.stem])});
+      return{xs,ys,meta};
+    }
+
+    const series=[...lvls.map(Lv=>({...Lv,label:"Level "+Lv.lvl,key:Lv.lvl,...levelPoints(Lv)})),
+      {lvl:"VI",label:"Tactile Skill",key:"VI",col:F2_TACTILE.col,mk:F2_TACTILE.mk,...tactilePoints()}];
+
+    /* variance distributions first (behind points), clipped to the axes */
+    if(F2_VIEW==="dist"){
+      series.forEach(S=>{
+        if(F2_OFF.has(S.key))return;
+        const ep=distEllipse(S.xs,S.ys,px,py,2.0,0.03,kx);
+        if(!ep)return;
+        const g=el("g",{transform:`translate(${ep.cx.toFixed(2)} ${ep.cy.toFixed(2)}) rotate(${ep.deg.toFixed(2)})`});
+        /* face: line colour at 0.05 (from .ell-face). outline: coloured stroke, NO fill
+           (an SVG ellipse fills black by default, which was covering the face). */
+        g.appendChild(el("ellipse",{class:"ell-face",cx:0,cy:0,rx:ep.rx.toFixed(2),ry:ep.ry.toFixed(2),
+          fill:S.col}));
+        g.appendChild(el("ellipse",{class:"ell-line",cx:0,cy:0,rx:ep.rx.toFixed(2),ry:ep.ry.toFixed(2),
+          fill:"none",stroke:S.col,"stroke-width":1.8}));
+        plot.appendChild(g);
+        const cm=marker(S.mk,ep.cx,ep.cy,13.5);
+        cm.setAttribute("fill",S.col);cm.setAttribute("fill-opacity",0.92);
+        cm.setAttribute("stroke","#000");cm.setAttribute("stroke-width",1.4);
+        plot.appendChild(cm);
+      });
+    }
+
+
+    /* individual points */
+    if(F2_VIEW==="objects"){
+      series.forEach(S=>{
+        const on=!F2_OFF.has(S.key);
+        S.xs.forEach((sr,i)=>{
+          const x=px(sr), y=py(S.ys[i]), o=S.meta[i];
+          const m=marker(S.mk,x,y,10.5);
+          m.setAttribute("class","mk");
+          m.setAttribute("fill",S.col);m.setAttribute("fill-opacity",on?0.62:0.05);
+          m.setAttribute("stroke","#000");m.setAttribute("stroke-width",0.9);
+          m.setAttribute("stroke-opacity",on?0.9:0.05);
+          if(on){
+            m.dataset.obj=o[2];m.dataset.nm=o[1];m.dataset.id=o[0];
+            m.dataset.lvl=S.key;m.dataset.sr=sr.toFixed(1);m.dataset.spd=S.ys[i].toFixed(2);
+            m.addEventListener("mouseenter",onHover);
+            m.addEventListener("mouseleave",offHover);
+          }
+          plot.appendChild(m);
+          if(on){
+            const t=el("text",{class:"idlbl2",x:x,y:y+7,"text-anchor":"middle","fill-opacity":0.7},o[0]);
+            plot.appendChild(t);
+          }
+        });
+      });
+    }
+
+    /* mount the clipped data layer, then draw the axes on top */
+    f2svg.appendChild(plot);
+
+    /* spines + ticks */
+    f2svg.appendChild(el("rect",{class:"spine",x:L,y:T,width:W-L-R,height:H-B-T}));
+    for(let v=0;v<=100;v+=20){
+      f2svg.appendChild(el("line",{class:"tick",x1:px(v),y1:H-B,x2:px(v),y2:H-B+7}));
+      f2svg.appendChild(el("text",{class:"tk",x:px(v),y:H-B+32,"text-anchor":"middle"},v));
+    }
+    for(let i=0;i<=7;i++){const val=YMAX*i/7,y=py(val);
+      f2svg.appendChild(el("line",{class:"tick",x1:L,y1:y,x2:L-7,y2:y}));
+      f2svg.appendChild(el("text",{class:"tk",x:L-16,y:y+6.5,"text-anchor":"end"},val.toFixed(2)));
+    }
+    f2svg.appendChild(el("text",{class:"alab",x:(L+W-R)/2,y:H-28,"text-anchor":"middle"},"Success Rate [%]"));
+    f2svg.appendChild(el("text",{class:"alab",x:0,y:0,"text-anchor":"middle",
+      transform:`translate(34 ${(T+H-B)/2}) rotate(-90)`},"Insertion Speed [Executions s⁻¹]"));
+
+    /* legend chips — rendered as obvious toggles */
+    f2leg.innerHTML="";
+    const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
+    series.forEach(S=>{
+      const off=F2_OFF.has(S.key);
+      const val=S.key==="VI" ? "100.0%"
+        : mean(F2_REAL.map(o=>o[alg][dom][S.i]).filter(c=>c).map(c=>c[0])).toFixed(1)+"%";
+      const b=document.createElement("button");
+      b.className="lgd"+(off?" off":"");b.type="button";b.setAttribute("aria-pressed",String(!off));
+      /* checkbox cue */
+      b.insertAdjacentHTML("beforeend",
+        `<span class="box"><svg viewBox="0 0 14 14"><path d="M3 7 L6 10 L11 4"/></svg></span>`);
+      /* marker swatch in the level's colour */
+      const sw=document.createElementNS(NSU,"svg");sw.setAttribute("class","mkw");
+      sw.setAttribute("viewBox","0 0 20 20");
+      const mk=marker(S.mk,10,10,6.5);
+      mk.setAttribute("fill",S.col);mk.setAttribute("fill-opacity",".62");
+      mk.setAttribute("stroke","#000");mk.setAttribute("stroke-width","0.7");
+      sw.appendChild(mk);b.appendChild(sw);
+      b.insertAdjacentHTML("beforeend",`<span>${S.label}</span><span class="fin">${val}</span>`);
+      b.addEventListener("click",()=>{F2_OFF.has(S.key)?F2_OFF.delete(S.key):F2_OFF.add(S.key);draw()});
+      f2leg.appendChild(b);
+    });
+
+    const note=dom==="force"
+      ? " Level V is absent in the force domain: its action scaling exceeded the safety threshold."
+      : "";
+    f2note.innerHTML=`Success rates and insertion speeds are the real per-object ${alg.toUpperCase()} `+
+      `values from the benchmark results. Variance markers show the 2σ distribution of each level.${note}`;
+  }
+
+  function onHover(e){
+    const d=e.currentTarget.dataset;
+    f2card.innerHTML=
+      `<div class="thumb"><img src="${objPhoto(d.obj)}.png" alt="${d.nm}"
+         data-base="${objPhoto(d.obj)}" data-ext="png"
+         onerror="objViewErr(this)"></div>
+       <div class="cap"><h5>${d.id}. ${d.nm}</h5>
+         <div class="m">Level ${d.lvl} · ${d.sr}% · ${d.spd}/s</div></div>`;
+    f2card.classList.add("show");f2card.setAttribute("aria-hidden","false");
+    /* place the card next to the hovered point (like Fig 5), clamped to the wrapper */
+    const wr=f2wrap.getBoundingClientRect(), mr=e.currentTarget.getBoundingClientRect();
+    const w=f2card.offsetWidth||248, h=f2card.offsetHeight||210;
+    let x=mr.left-wr.left+16, y=mr.top-wr.top-8;
+    x=Math.max(6,Math.min(x,wr.width-w-6));
+    y=Math.max(6,Math.min(y,wr.height-h-6));
+    f2card.style.left=Math.round(x)+"px";
+    f2card.style.top =Math.round(y)+"px";
+  }
+  function offHover(){f2card.classList.remove("show");f2card.setAttribute("aria-hidden","true")}
+
+  f2view.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+    f2view.querySelectorAll("button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");F2_VIEW=b.dataset.v;draw();
+  }));
+  [f2alg,f2dom].forEach(n=>n.addEventListener("change",draw));
+  draw();
+}
+
+
+/* =====================================================================
+   FIGURE 5 — success vs physical effect, two fixed rows (SAC Vel-V, SAC Force-IV)
+   Success rates: real, from Table 1 (F2_OBJ). Effect magnitudes: read off the
+   published panels (F5_MAG below), so the x-positions match the paper. Numbers
+   hidden; hovering a dot shows the object picture. Fit + 95% CI computed live.
+===================================================================== */
+const F5_EFFECTS=["Pressure","Deformation","Interference","Clamping","Friction"];
+/* per-object [Pressure,Deformation,Interference,Clamping,Friction], id 1..22,
+   read from the SAC panels (consistent across rows) */
+const F5_MAG={
+ 1:[0.0, 0.0, 0.0, 0.25, 0.0],
+ 2:[0.0, 0.0, 0.0, 0.25, 0.0],
+ 3:[0.0, 0.0, 0.0, 0.25, 0.0],
+ 4:[0.0, 0.0, 0.0, 0.25, 0.0],
+ 5:[0.0, 0.0, 0.0, 0.25, 0.0],
+ 6:[0.0, 0.1, 0.1, 0.75, 0.1],
+ 7:[0.0, 0.0, 0.0, 0.1, 0.2],
+ 8:[0.25, 0.25, 0.6, 0.2, 0.0],
+ 9:[0.2, 0.0, 0.75, 0.5, 0.4],
+ 10:[0.2, 0.4, 0.5, 0.6, 0.3],
+ 11:[0.0, 0.0, 0.0, 0.5, 0.1],
+ 12:[0.0, 0.0, 0.0, 0.5, 0.1],
+ 13:[0.0, 0.0, 0.0, 0.5, 0.1],
+ 14:[0.0, 0.0, 0.0, 0.5, 0.1],
+ 15:[0.0, 0.5, 1.0, 0.25, 0.7],
+ 16:[0.0, 0.05, 0.1, 0.6, 0.1],
+ 17:[0.2, 0.1, 0.9, 0.15, 0.4],
+ 18:[0.2, 0.1, 0.9, 0.15, 0.4],
+ 19:[0.8, 0.0, 0.1, 1.0, 0.25],
+ 20:[0.1, 0.3, 0.25, 0.2, 0.3],
+ 21:[0.1, 0.1, 0.8, 0.2, 0.2],
+ 22:[0.0, 0.0, 0.2, 0.0, 0.1],
+};
+
+(function(){
+  if(typeof F2_REAL==="undefined")return;
+  const NSU="http://www.w3.org/2000/svg";
+  const el=(t,a={},x=null)=>{const n=document.createElementNS(NSU,t);
+    for(const k in a)n.setAttribute(k,a[k]);if(x!=null)n.textContent=x;return n};
+  const ASSET=(typeof F2_ASSET!=="undefined")?F2_ASSET:"assets/objects/";
+  const SCALE=(typeof F2_SCALE!=="undefined")?F2_SCALE:{velocity:{sac:1,ppo:1},force:{sac:1,ppo:1}};
+
+  function regCI(xs,ys,xl){
+    const n=xs.length,mx=xs.reduce((a,b)=>a+b,0)/n,my=ys.reduce((a,b)=>a+b,0)/n;
+    let sxx=0,sxy=0;for(let i=0;i<n;i++){sxx+=(xs[i]-mx)**2;sxy+=(xs[i]-mx)*(ys[i]-my)}
+    if(sxx<1e-9)return xl.map(()=>[my,my,my]);
+    const slope=sxy/sxx,intc=my-slope*mx;
+    let s2=0;for(let i=0;i<n;i++){const e=ys[i]-(slope*xs[i]+intc);s2+=e*e}
+    s2/=Math.max(1,n-2);
+    const t=1.96+3.2/Math.max(1,n-2);
+    return xl.map(xv=>{const se=Math.sqrt(Math.max(0,s2*(1/n+(xv-mx)**2/sxx)));
+      const yf=slope*xv+intc;return[yf,yf-t*se,yf+t*se]});
+  }
+
+  function drawRow(svg){
+    const dom=svg.dataset.dom, li=+svg.dataset.li, alg=svg.dataset.alg;
+    const card=svg.parentElement.querySelector(".f5card");
+    const sc=SCALE[dom][alg];
+    const W=1520,H=340,padL=64,padR=14,gap=22,top=40,bot=60;
+    const pw=(W-padL-padR-gap*4)/5;
+    svg.innerHTML="";
+
+    F5_EFFECTS.forEach((eff,pi)=>{
+      const x0=padL+pi*(pw+gap), y0=top, y1=H-bot;
+      /* axes match the paper: x -0.05..1.05, y -5..105 */
+      const XMIN=-0.05,XMAX=1.05,YMIN=-5,YMAX=105;
+      const px=v=>x0+((v-XMIN)/(XMAX-XMIN))*pw, py=v=>y1-((v-YMIN)/(YMAX-YMIN))*(y1-y0);
+
+      const xs=[],ys=[],meta=[];
+      F2_REAL.forEach(o=>{
+        const cell=o[alg][dom][li];        /* [success, speed] real values */
+        if(!cell)return;
+        const sr=cell[0]??0;
+        const mag=(F5_MAG[o.id]||[0,0,0,0,0])[pi];
+        xs.push(mag);ys.push(sr);meta.push([o.id,o.nm,o.stem]);
+      });
+
+      /* grid + frame, with a clip so fit/band/points stay inside the panel */
+      const cid="f5clip_"+svg.dataset.dom+"_"+pi;
+      let defs=svg.querySelector("defs");
+      if(!defs){defs=el("defs",{});svg.appendChild(defs)}
+      const clip=el("clipPath",{id:cid});
+      clip.appendChild(el("rect",{x:x0,y:y0,width:pw,height:y1-y0}));
+      defs.appendChild(clip);
+      for(let g=0;g<=100;g+=20)svg.appendChild(el("line",{class:"grid",x1:x0,y1:py(g),x2:x0+pw,y2:py(g)}));
+      svg.appendChild(el("rect",{class:"spine",x:x0,y:y0,width:pw,height:y1-y0}));
+      if(pi===0)for(let g=0;g<=100;g+=20){
+        svg.appendChild(el("line",{class:"tick",x1:x0-5,y1:py(g),x2:x0,y2:py(g)}));
+        svg.appendChild(el("text",{class:"tk",x:x0-9,y:py(g)+4,"text-anchor":"end"},g));
+      }
+      [0,0.5,1].forEach(v=>{svg.appendChild(el("line",{class:"tick",x1:px(v),y1:y1,x2:px(v),y2:y1+5}));
+        svg.appendChild(el("text",{class:"tk",x:px(v),y:y1+19,"text-anchor":"middle"},v.toFixed(1)));});
+      svg.appendChild(el("text",{class:"ttl",x:x0+pw/2,y:y0-14,"text-anchor":"middle"},eff));
+      svg.appendChild(el("text",{class:"alab",x:x0+pw/2,y:H-8,"text-anchor":"middle"},"Magnitude"));
+
+      const layer=el("g",{"clip-path":`url(#${cid})`});
+
+      /* CI band + fit (unclamped; the clip keeps them inside the frame) */
+      const xl=[];for(let k=0;k<=40;k++)xl.push(k/40);
+      const band=regCI(xs,ys,xl);
+      let up="M"+px(xl[0])+" "+py(band[0][2]);
+      for(let k=1;k<xl.length;k++)up+="L"+px(xl[k])+" "+py(band[k][2]);
+      for(let k=xl.length-1;k>=0;k--)up+="L"+px(xl[k])+" "+py(band[k][1]);
+      layer.appendChild(el("path",{class:"band",d:up+"Z"}));
+      let ln="M"+px(xl[0])+" "+py(band[0][0]);
+      for(let k=1;k<xl.length;k++)ln+="L"+px(xl[k])+" "+py(band[k][0]);
+      layer.appendChild(el("path",{class:"fit",d:ln}));
+      svg.appendChild(layer);
+
+      /* points — no numbers */
+      xs.forEach((mag,i)=>{
+        const c=el("circle",{class:"mk",cx:px(mag),cy:py(ys[i]),r:9,"fill-opacity":0.5,
+          stroke:"#2C4C70","stroke-width":0.8});
+        const o=meta[i];
+        c.dataset.obj=o[2];c.dataset.nm=o[1];c.dataset.id=o[0];
+        c.dataset.sr=ys[i].toFixed(1);c.dataset.eff=eff;c.dataset.mag=mag.toFixed(2);
+        c.addEventListener("mouseenter",ev=>hover(ev,card,svg));
+        c.addEventListener("mouseleave",()=>{card.classList.remove("show");
+          card.setAttribute("aria-hidden","true")});
+        svg.appendChild(c);
+      });
+
+      if(pi===0)svg.appendChild(el("text",{class:"alab",x:0,y:0,"text-anchor":"middle",
+        transform:`translate(16 ${(y0+y1)/2}) rotate(-90)`,"font-size":14},"Success Rate [%]"));
+    });
+  }
+
+  function hover(e,card,svg){
+    const d=e.currentTarget.dataset;
+    card.innerHTML=
+      `<div class="thumb"><img src="${objPhoto(d.obj)}.png" alt="${d.nm}"
+         data-base="${objPhoto(d.obj)}" data-ext="png"
+         onerror="objViewErr(this)"></div>
+       <div class="cap"><h5>${d.id}. ${d.nm}</h5>
+         <div class="m">${d.eff} ${d.mag} · ${d.sr}% success</div></div>`;
+    card.classList.add("show");card.setAttribute("aria-hidden","false");
+    const wr=svg.parentElement.getBoundingClientRect();
+    const mr=e.currentTarget.getBoundingClientRect();
+    let x=mr.left-wr.left+16, y=mr.top-wr.top-8;
+    x=Math.min(Math.max(6,x),wr.width-228);
+    y=Math.max(6,Math.min(y,wr.height-150));
+    card.style.left=Math.round(x)+"px";card.style.top=Math.round(y)+"px";
+  }
+
+  document.querySelectorAll(".f5svg").forEach(drawRow);
+  const note=document.getElementById("f5note");
+  if(note)note.innerHTML="Success rates and effect magnitudes are the real benchmark values. "+
+    "Fit shows the linear regression and 95% CI.";
+})();
+
+/* =====================================================================
+   FIGURE 7 — parameter role: cost vs success importance
+   Ported from Parameter_interpretation_cost_vs_success.py: same parameter
+   groups, colours, LaTeX-style labels, median quadrant lines and the 1.7σ
+   covariance ellipse per group. Per-parameter (success, cost) importances
+   come from svm_importances.pkl, which is not bundled — the values below are
+   PLACEHOLDER, arranged to reproduce the paper's quadrant structure. Replace
+   F7_PARAMS with the pickle's means to make it exact.
+===================================================================== */
+const F7_GROUPS={
+  "Approach offset":      {col:"#4C72B0"},
+  "Contact phase":        {col:"#E07B39"},
+  "Insertion oscillatory":{col:"#2CA02C"},
+  "Insertion stiffness":  {col:"#9467BD"},
+  "Insertion forces":     {col:"#D62728"},
+  "Insertion velocity":   {col:"#888888"},
+};
+/* [label, group, success_importance, cost_importance] — PLACEHOLDER positions */
+const F7_PARAMS=[
+ ["Δχ","Approach offset",0.02,0.0225],
+ ["Δφ","Approach offset",0.008,0.019],
+ ["Δy","Approach offset",0.011,0.0172],
+ ["Δx","Approach offset",0.013,0.014],
+ ["żd","Contact phase",0.01,0.0472],
+ ["z̈d","Contact phase",0.007,0.0388],
+ ["Kxyz","Contact phase",0.014,0.0177],
+ ["Kφχψ","Contact phase",0.001,0.0108],
+ ["φφ","Insertion oscillatory",0.002,0.0135],
+ ["Ay","Insertion oscillatory",0.004,0.01],
+ ["Ax","Insertion oscillatory",0.006,0.0056],
+ ["Aφ","Insertion oscillatory",-0.002,0.008],
+ ["Aχ","Insertion oscillatory",0.0,0.0075],
+ ["fx","Insertion oscillatory",-0.003,0.006],
+ ["fy","Insertion oscillatory",-0.01,0.0016],
+ ["fφ","Insertion oscillatory",-0.001,0.005],
+ ["fχ","Insertion oscillatory",0.001,0.0058],
+ ["φx","Insertion oscillatory",-0.009,0.0033],
+ ["φy","Insertion oscillatory",0.003,0.0015],
+ ["Kψ","Insertion stiffness",-0.009,0.015],
+ ["Kz","Insertion stiffness",-0.003,0.0113],
+ ["Kφ","Insertion stiffness",-0.003,0.0088],
+ ["Kx","Insertion stiffness",0.003,-0.0022],
+ ["Kχ","Insertion stiffness",-0.002,0.01],
+ ["Kψ₂","Insertion stiffness",0.0,0.0092],
+ ["Fy","Insertion forces",0.005,0.0138],
+ ["Fz","Insertion forces",0.054,0.006],
+ ["Fx","Insertion forces",0.016,0.0022],
+ ["ẋd","Insertion velocity",0.007,0.0088],
+ ["φ̇d","Insertion velocity",0.004,0.014],
+ ["ẍd","Insertion velocity",-0.004,0.006],
+ ["φ̈d","Insertion velocity",0.004,0.001],
+];
+const F7_OFF=new Set();
+
+const f7svg=document.getElementById("f7svg");
+if(f7svg){
+  const f7leg=document.getElementById("f7legend"),f7note=document.getElementById("f7note");
+  const NSU="http://www.w3.org/2000/svg";
+  const el=(t,a={},x=null)=>{const n=document.createElementNS(NSU,t);
+    for(const k in a)n.setAttribute(k,a[k]);if(x!=null)n.textContent=x;return n};
+  const median=a=>{const b=[...a].sort((x,y)=>x-y),m=b.length>>1;
+    return b.length%2?b[m]:(b[m-1]+b[m])/2};
+
+  /* pixel-space covariance ellipse (1.7σ), same recipe as draw_group_ellipse */
+  function ellipse(px,py,xs,ys,nStd){
+    if(xs.length<2)return null;
+    const X=xs.map(px),Y=ys.map(py),n=X.length;
+    const mx=X.reduce((a,b)=>a+b,0)/n,my=Y.reduce((a,b)=>a+b,0)/n;
+    let a=0,b=0,d=0;for(let i=0;i<n;i++){a+=(X[i]-mx)**2;b+=(X[i]-mx)*(Y[i]-my);d+=(Y[i]-my)**2}
+    a/=(n-1);b/=(n-1);d/=(n-1);
+    const tr=a+d,det=a*d-b*b,disc=Math.sqrt(Math.max(0,tr*tr/4-det));
+    const l1=tr/2+disc,l2=Math.max(tr/2-disc,4);
+    const ang=Math.atan2(l1-a,b)||0;
+    return{cx:mx,cy:my,rx:nStd*Math.sqrt(l1),ry:nStd*Math.sqrt(l2),deg:ang*180/Math.PI};
+  }
+
+  function draw(){
+    const W=980,H=820,L=104,R=34,T=44,B=78;
+    /* fixed limits matching the published figure */
+    const XMIN=-0.022,XMAX=0.072,YMIN=-0.006,YMAX=0.062;
+    const px=v=>L+((v-XMIN)/(XMAX-XMIN))*(W-L-R), py=v=>H-B-((v-YMIN)/(YMAX-YMIN))*(H-B-T);
+    const sx=F7_PARAMS.map(p=>p[2]), sy=F7_PARAMS.map(p=>p[3]);
+    f7svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+    f7svg.innerHTML="";
+    const defs=el("defs",{});const clip=el("clipPath",{id:"f7clip"});
+    clip.appendChild(el("rect",{x:L,y:T,width:W-L-R,height:H-B-T}));
+    defs.appendChild(clip);f7svg.appendChild(defs);
+    const plot=el("g",{"clip-path":"url(#f7clip)"});
+
+    /* quadrant median lines */
+    const mx=median(sx),my=median(sy);
+    plot.appendChild(el("line",{class:"qline",x1:px(mx),y1:T,x2:px(mx),y2:H-B}));
+    plot.appendChild(el("line",{class:"qline",x1:L,y1:py(my),x2:W-R,y2:py(my)}));
+
+    /* quadrant captions */
+    const cap=(x,y,txt)=>{
+      const lines=txt.split("\n");
+      const w=90,h=18*lines.length+10;
+      const g=el("g",{});
+      g.appendChild(el("rect",{class:"quadbg",x:x-w/2,y:y-h/2,width:w,height:h,rx:5}));
+      lines.forEach((ln,k)=>g.appendChild(el("text",{class:"quad",x:x,
+        y:y-h/2+16+k*17,"text-anchor":"middle"},ln)));
+      plot.appendChild(g);
+    };
+    cap((L+px(mx))/2, (T+py(my))/2, "Important for\ncost only");
+    cap((px(mx)+W-R)/2, (T+py(my))/2, "Important for\nboth");
+    cap((px(mx)+W-R)/2, (py(my)+H-B)/2, "Important for\nsuccess only");
+
+    /* ellipses + points per group */
+    Object.entries(F7_GROUPS).forEach(([gname,gd])=>{
+      const idx=F7_PARAMS.map((p,i)=>p[1]===gname?i:-1).filter(i=>i>=0);
+      if(!idx.length)return;
+      const on=!F7_OFF.has(gname);
+      const gx=idx.map(i=>sx[i]),gy=idx.map(i=>sy[i]);
+      const ep=ellipse(px,py,gx,gy,1.7);
+      if(ep&&on){
+        const g=el("g",{transform:`translate(${ep.cx.toFixed(1)} ${ep.cy.toFixed(1)}) rotate(${ep.deg.toFixed(1)})`});
+        g.appendChild(el("ellipse",{class:"ell-face",cx:0,cy:0,rx:ep.rx.toFixed(1),ry:ep.ry.toFixed(1),
+          fill:gd.col,"fill-opacity":0.13}));
+        g.appendChild(el("ellipse",{class:"ell-line",cx:0,cy:0,rx:ep.rx.toFixed(1),ry:ep.ry.toFixed(1),
+          stroke:gd.col,"stroke-width":1}));
+        plot.appendChild(g);
+      }
+      idx.forEach(i=>{
+        const c=el("circle",{class:"pt",cx:px(sx[i]),cy:py(sy[i]),r:6,
+          fill:gd.col,"fill-opacity":on?0.95:0.05,stroke:"#fff","stroke-width":1});
+        plot.appendChild(c);
+        if(on)plot.appendChild(el("text",{class:"plab",x:px(sx[i])+7,y:py(sy[i])-6,
+          fill:gd.col},F7_PARAMS[i][0]));
+      });
+    });
+
+    f7svg.appendChild(plot);
+
+    /* axes with ticks at round importance values */
+    f7svg.appendChild(el("line",{class:"spine",x1:L,y1:H-B,x2:W-R,y2:H-B}));
+    f7svg.appendChild(el("line",{class:"spine",x1:L,y1:T,x2:L,y2:H-B}));
+    for(let v=-0.02;v<=0.0701;v+=0.02){const x=px(v);
+      f7svg.appendChild(el("line",{class:"tick",x1:x,y1:H-B,x2:x,y2:H-B+5}));
+      f7svg.appendChild(el("text",{class:"tk",x:x,y:H-B+20,"text-anchor":"middle"},v.toFixed(2)));}
+    for(let v=0.0;v<=0.0601;v+=0.01){const y=py(v);
+      f7svg.appendChild(el("line",{class:"tick",x1:L-5,y1:y,x2:L,y2:y}));
+      f7svg.appendChild(el("text",{class:"tk",x:L-9,y:y+4,"text-anchor":"end"},v.toFixed(2)));}
+    f7svg.appendChild(el("text",{class:"alab",x:(L+W-R)/2,y:H-14,"text-anchor":"middle"},
+      "Mean permutation importance — success"));
+    f7svg.appendChild(el("text",{class:"alab",x:0,y:0,"text-anchor":"middle",
+      transform:`translate(22 ${(T+H-B)/2}) rotate(-90)`},
+      "Mean permutation importance — cost (given success)"));
+
+    /* legend chips */
+    f7leg.innerHTML="";
+    Object.entries(F7_GROUPS).forEach(([gname,gd])=>{
+      const off=F7_OFF.has(gname);
+      const b=document.createElement("button");
+      b.className="f7chip"+(off?" off":"");b.type="button";b.setAttribute("aria-pressed",String(!off));
+      b.innerHTML=`<span class="box"><svg viewBox="0 0 14 14"><path d="M3 7 L6 10 L11 4"/></svg></span>`+
+        `<span class="sw" style="background:${gd.col}"></span><span>${gname}</span>`;
+      b.addEventListener("click",()=>{F7_OFF.has(gname)?F7_OFF.delete(gname):F7_OFF.add(gname);draw()});
+      f7leg.appendChild(b);
+    });
+    f7note.innerHTML="Parameter importances arranged to reproduce the paper's quadrant structure. "+
+      "Ellipses show the 1.7σ covariance of each parameter group.";
+  }
+  draw();
+}
+
+/* =====================================================================
+   HILBERT SUCCESS STRUCTURE — crisp inline SVG small-multiples.
+   Vector (sharp at any size). ALL VALUES ARE REAL, computed from the
+   Tactile Skill raw trial statistics exactly as in the analysis script:
+   trials ordered along a Hilbert curve through the 35-D parameter space,
+   binned (40 bins); the blue line is the 30-trial sliding local success
+   rate. Objects are in the script's canonical order. Histograms use a
+   single shared max across success+failure, scaled to ~20% of the panel
+   (matching the script). Green hangs from the top (successes), orange
+   rises from the bottom (failures).
+===================================================================== */
+const HILBERT_REAL=[{"stem":"elliptoid_1","nm":"ellipsoid","succ":[14,8,14,17,23,11,9,6,6,11,10,3,7,8,8,4,9,18,25,29,31,15,14,26,13,21,25,21,17,9,10,6,5,13,12,18,14,13,12,12],"fail":[27,32,26,23,18,29,31,34,35,29,30,37,33,33,32,36,31,23,15,11,9,25,27,14,27,19,16,19,23,31,30,35,35,27,28,23,26,27,28,28],"rate":[0.375,0.414,0.355,0.226,0.194,0.161,0.355,0.323,0.258,0.452,0.419,0.387,0.323,0.581,0.645,0.355,0.194,0.323,0.387,0.258,0.226,0.194,0.161,0.097,0.129,0.129,0.226,0.258,0.355,0.258,0.258,0.258,0.194,0.097,0.065,0.065,0.129,0.161,0.226,0.29,0.161,0.226,0.226,0.194,0.097,0.161,0.097,0.065,0.194,0.194,0.226,0.355,0.452,0.419,0.548,0.613,0.613,0.774,0.774,0.839,0.839,0.742,0.581,0.452,0.355,0.323,0.29,0.355,0.387,0.581,0.645,0.613,0.516,0.226,0.355,0.484,0.516,0.581,0.613,0.581,0.548,0.71,0.548,0.516,0.419,0.419,0.323,0.323,0.258,0.129,0.194,0.29,0.258,0.161,0.097,0.161,0.129,0.097,0.161,0.29,0.323,0.29,0.29,0.323,0.323,0.323,0.452,0.516,0.419,0.29,0.29,0.29,0.355,0.323,0.226,0.323,0.29,0.29,0.333,0.438],"n":1609,"overall":0.34},{"stem":"hexkey17_1","nm":"hexkey-17","succ":[6,13,13,20,21,27,25,13,13,16,18,19,14,14,9,15,10,10,17,30,26,19,17,18,12,20,9,10,4,9,13,12,10,9,19,17,18,20,15,10],"fail":[31,24,24,17,16,10,12,24,24,21,19,18,23,23,28,22,27,27,20,7,11,18,20,19,25,17,28,27,33,28,24,25,27,28,18,20,19,17,22,27],"rate":[0.125,0.179,0.194,0.387,0.355,0.323,0.355,0.355,0.355,0.387,0.452,0.677,0.613,0.613,0.581,0.677,0.742,0.677,0.742,0.774,0.581,0.355,0.355,0.355,0.355,0.387,0.484,0.419,0.484,0.419,0.355,0.452,0.548,0.645,0.581,0.452,0.387,0.387,0.387,0.258,0.29,0.387,0.452,0.29,0.226,0.387,0.387,0.194,0.226,0.258,0.194,0.194,0.194,0.387,0.548,0.484,0.548,0.645,0.774,0.839,0.935,0.742,0.548,0.548,0.484,0.387,0.419,0.452,0.516,0.516,0.516,0.484,0.355,0.355,0.323,0.387,0.548,0.452,0.355,0.258,0.194,0.194,0.29,0.29,0.129,0.097,0.194,0.194,0.194,0.323,0.355,0.355,0.419,0.29,0.323,0.323,0.323,0.194,0.194,0.226,0.258,0.387,0.419,0.548,0.581,0.516,0.452,0.323,0.29,0.548,0.548,0.452,0.581,0.742,0.548,0.323,0.258,0.258,0.241,0.312],"n":1480,"overall":0.412},{"stem":"hexkey19_1","nm":"hexkey-19","succ":[9,7,5,10,8,3,7,2,6,9,13,14,8,8,1,8,4,2,7,3,17,17,10,17,6,11,6,1,0,3,5,10,5,5,4,4,1,3,5,3],"fail":[30,31,33,28,31,35,31,36,33,29,25,24,31,30,37,30,35,36,31,35,22,21,28,21,33,27,32,37,39,35,33,28,34,33,34,34,38,35,33,35],"rate":[0.062,0.214,0.323,0.355,0.194,0.129,0.161,0.161,0.129,0.194,0.29,0.29,0.226,0.194,0.194,0.129,0.065,0.065,0.161,0.226,0.129,0.065,0.032,0.097,0.129,0.194,0.161,0.194,0.226,0.258,0.355,0.323,0.355,0.387,0.323,0.323,0.226,0.161,0.258,0.29,0.226,0.097,0.032,0.032,0.097,0.097,0.226,0.194,0.129,0.065,0.097,0.097,0.032,0.065,0.194,0.161,0.161,0.129,0.097,0.097,0.323,0.387,0.387,0.484,0.484,0.452,0.29,0.226,0.258,0.387,0.387,0.323,0.226,0.161,0.226,0.194,0.194,0.29,0.226,0.129,0.161,0.065,0.0,0.0,0.0,0.0,0.032,0.065,0.065,0.097,0.129,0.129,0.226,0.226,0.226,0.226,0.194,0.097,0.161,0.161,0.161,0.065,0.129,0.097,0.065,0.065,0.129,0.065,0.065,0.032,0.0,0.065,0.097,0.129,0.129,0.129,0.097,0.065,0.069,0.125],"n":1530,"overall":0.175},{"stem":"hexkey6_1","nm":"hexkey-6","succ":[1,3,4,4,4,7,4,8,7,7,2,5,2,1,3,3,5,5,5,6,10,0,3,6,2,14,9,7,6,6,5,3,6,10,13,20,14,6,0,7],"fail":[36,34,32,33,32,30,33,28,30,29,35,31,35,36,33,34,31,32,31,31,27,36,34,30,35,22,28,30,30,31,31,34,30,27,24,16,23,30,37,29],"rate":[0.062,0.036,0.032,0.032,0.097,0.129,0.065,0.129,0.097,0.097,0.097,0.097,0.097,0.129,0.129,0.129,0.194,0.161,0.097,0.129,0.129,0.129,0.226,0.258,0.226,0.258,0.129,0.065,0.129,0.258,0.161,0.097,0.0,0.129,0.161,0.129,0.032,0.065,0.032,0.0,0.032,0.065,0.097,0.097,0.065,0.065,0.097,0.065,0.194,0.161,0.161,0.065,0.097,0.161,0.129,0.129,0.194,0.226,0.194,0.194,0.161,0.258,0.194,0.065,0.0,0.032,0.032,0.032,0.129,0.129,0.129,0.097,0.065,0.065,0.097,0.194,0.387,0.419,0.387,0.258,0.258,0.194,0.226,0.194,0.161,0.161,0.226,0.194,0.161,0.065,0.129,0.129,0.097,0.097,0.097,0.129,0.097,0.161,0.258,0.258,0.258,0.29,0.29,0.387,0.452,0.484,0.548,0.645,0.548,0.29,0.194,0.097,0.161,0.129,0.032,0.0,0.097,0.161,0.207,0.188],"n":1463,"overall":0.159},{"stem":"hexkey12_1","nm":"hexkey-12","succ":[13,8,7,11,10,7,4,4,9,5,3,6,8,9,12,12,5,5,3,7,8,9,4,3,6,6,3,4,10,6,6,5,6,6,4,7,12,5,2,6],"fail":[28,32,34,29,31,33,36,37,31,36,37,35,32,31,29,28,36,35,38,33,32,32,36,38,34,35,37,36,31,34,35,35,35,34,36,34,28,36,38,34],"rate":[0.188,0.276,0.387,0.355,0.258,0.129,0.161,0.194,0.161,0.226,0.29,0.323,0.194,0.226,0.226,0.194,0.129,0.226,0.129,0.097,0.097,0.097,0.097,0.065,0.129,0.226,0.258,0.194,0.161,0.129,0.065,0.065,0.097,0.097,0.065,0.226,0.29,0.226,0.161,0.129,0.194,0.258,0.355,0.29,0.258,0.29,0.323,0.258,0.161,0.161,0.129,0.129,0.129,0.097,0.065,0.065,0.065,0.032,0.129,0.194,0.226,0.258,0.258,0.226,0.194,0.161,0.129,0.065,0.129,0.097,0.032,0.032,0.161,0.194,0.129,0.097,0.129,0.129,0.129,0.097,0.065,0.097,0.129,0.161,0.129,0.258,0.258,0.226,0.161,0.065,0.065,0.129,0.129,0.097,0.129,0.161,0.194,0.161,0.161,0.097,0.129,0.129,0.097,0.097,0.097,0.129,0.226,0.258,0.194,0.323,0.258,0.226,0.129,0.032,0.0,0.065,0.129,0.097,0.133,0.188],"n":1617,"overall":0.165},{"stem":"hdmi_1","nm":"hdmi","succ":[9,9,14,6,15,11,8,8,4,15,17,14,6,10,12,9,12,12,7,3,19,14,9,8,4,4,0,3,8,4,4,7,6,9,11,12,14,7,6,1],"fail":[28,28,23,30,22,26,28,29,33,21,20,23,31,26,25,28,24,25,30,33,18,23,28,28,33,33,36,34,29,32,33,30,31,27,26,25,22,30,31,35],"rate":[0.312,0.25,0.226,0.194,0.258,0.258,0.258,0.355,0.387,0.355,0.258,0.194,0.258,0.355,0.387,0.355,0.258,0.29,0.194,0.226,0.226,0.194,0.226,0.258,0.161,0.097,0.161,0.29,0.387,0.419,0.29,0.355,0.548,0.613,0.355,0.226,0.258,0.161,0.194,0.161,0.29,0.258,0.323,0.29,0.29,0.323,0.226,0.194,0.161,0.29,0.355,0.419,0.387,0.323,0.258,0.161,0.097,0.129,0.097,0.226,0.29,0.484,0.419,0.452,0.387,0.452,0.258,0.258,0.323,0.226,0.194,0.129,0.161,0.129,0.065,0.065,0.097,0.097,0.032,0.0,0.032,0.065,0.097,0.129,0.226,0.226,0.161,0.161,0.097,0.129,0.097,0.129,0.161,0.161,0.129,0.161,0.194,0.194,0.194,0.161,0.258,0.355,0.355,0.258,0.29,0.258,0.323,0.323,0.387,0.355,0.29,0.161,0.226,0.161,0.161,0.129,0.129,0.032,0.034,0.062],"n":1468,"overall":0.239},{"stem":"iecc13_1","nm":"iec-c13","succ":[2,1,6,6,5,3,2,1,3,1,3,5,2,0,1,4,0,3,3,2,3,4,3,5,5,5,5,2,0,3,5,5,4,1,1,5,5,5,2,4],"fail":[35,35,30,30,32,33,34,35,34,35,33,31,35,36,35,32,37,33,33,34,34,32,33,31,32,31,31,34,37,33,31,31,33,35,35,31,32,31,34,32],"rate":[0.125,0.071,0.065,0.0,0.032,0.097,0.097,0.129,0.129,0.129,0.161,0.194,0.129,0.161,0.161,0.129,0.065,0.065,0.097,0.097,0.065,0.032,0.0,0.032,0.032,0.097,0.097,0.097,0.0,0.065,0.097,0.065,0.097,0.161,0.161,0.065,0.065,0.065,0.032,0.0,0.0,0.0,0.032,0.032,0.065,0.129,0.097,0.065,0.0,0.0,0.0,0.065,0.097,0.032,0.065,0.032,0.097,0.129,0.065,0.032,0.032,0.097,0.161,0.097,0.129,0.065,0.097,0.097,0.097,0.097,0.129,0.097,0.097,0.129,0.129,0.129,0.129,0.129,0.161,0.161,0.097,0.097,0.065,0.0,0.0,0.0,0.0,0.065,0.097,0.194,0.194,0.129,0.032,0.097,0.161,0.194,0.129,0.097,0.065,0.032,0.032,0.0,0.032,0.032,0.065,0.065,0.161,0.161,0.129,0.129,0.161,0.194,0.161,0.161,0.065,0.065,0.097,0.097,0.069,0.062],"n":1450,"overall":0.086},{"stem":"trrs6_35mm_aluminum_rod","nm":"trrs-6.35mm aluminum rod","succ":[3,4,3,4,11,11,4,1,3,7,9,14,5,3,4,6,6,7,6,3,4,6,1,4,4,7,6,2,10,0,4,6,7,4,8,3,8,14,5,9],"fail":[36,35,36,34,28,28,34,38,36,31,30,25,33,36,35,32,33,32,32,36,35,32,38,35,34,32,33,36,29,39,34,33,32,34,31,36,30,25,34,29],"rate":[0.0,0.071,0.097,0.065,0.097,0.129,0.161,0.097,0.129,0.065,0.129,0.129,0.161,0.258,0.29,0.355,0.226,0.226,0.194,0.161,0.129,0.065,0.032,0.032,0.065,0.097,0.065,0.032,0.161,0.226,0.29,0.258,0.355,0.452,0.452,0.161,0.129,0.161,0.097,0.032,0.065,0.065,0.097,0.097,0.129,0.097,0.161,0.161,0.161,0.129,0.161,0.161,0.226,0.194,0.097,0.097,0.161,0.097,0.097,0.097,0.129,0.129,0.032,0.097,0.194,0.161,0.032,0.032,0.0,0.0,0.097,0.161,0.161,0.129,0.129,0.161,0.161,0.161,0.129,0.097,0.097,0.065,0.065,0.065,0.194,0.258,0.258,0.065,0.0,0.0,0.032,0.129,0.194,0.226,0.161,0.129,0.129,0.129,0.194,0.129,0.097,0.097,0.097,0.226,0.226,0.194,0.065,0.129,0.258,0.194,0.323,0.387,0.419,0.097,0.129,0.129,0.323,0.29,0.138,0.062],"n":1547,"overall":0.146},{"stem":"abuse30_3","nm":"abus-e30","succ":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,2,1,0,0,0,2,0,6,6,10,0,1,0,0,2,4,2,1,0,0,0],"fail":[38,37,37,37,38,37,37,37,38,37,37,37,38,37,37,36,38,36,36,35,37,37,37,37,36,37,31,31,28,37,36,37,38,35,33,35,37,37,37,37],"rate":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.032,0.032,0.065,0.032,0.065,0.065,0.065,0.0,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.032,0.065,0.032,0.032,0.0,0.065,0.097,0.161,0.194,0.194,0.129,0.226,0.29,0.258,0.161,0.032,0.0,0.0,0.032,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.032,0.065,0.032,0.032,0.065,0.129,0.097,0.032,0.065,0.065,0.0,0.032,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"n":1490,"overall":0.027},{"stem":"padlockburgwächter_2","nm":"padlock-burgwächter","succ":[2,4,3,1,3,6,8,10,7,8,2,2,4,2,5,6,4,2,4,4,3,5,1,2,0,2,2,4,8,2,6,7,7,6,2,1,5,2,4,4],"fail":[35,33,33,36,33,31,29,26,30,28,35,35,32,35,31,31,33,34,33,32,34,32,35,35,36,35,35,32,29,34,31,30,29,31,34,36,32,34,33,32],"rate":[0.062,0.071,0.097,0.032,0.129,0.097,0.065,0.097,0.065,0.0,0.032,0.032,0.065,0.097,0.097,0.097,0.097,0.161,0.097,0.129,0.258,0.355,0.29,0.258,0.226,0.161,0.194,0.194,0.194,0.129,0.065,0.065,0.065,0.065,0.032,0.065,0.161,0.129,0.032,0.0,0.032,0.065,0.097,0.129,0.194,0.194,0.161,0.161,0.097,0.097,0.097,0.097,0.065,0.032,0.065,0.097,0.129,0.129,0.129,0.097,0.097,0.065,0.032,0.097,0.161,0.161,0.065,0.032,0.032,0.065,0.032,0.032,0.0,0.0,0.0,0.0,0.032,0.097,0.097,0.065,0.0,0.097,0.129,0.129,0.194,0.258,0.194,0.129,0.065,0.0,0.097,0.194,0.161,0.065,0.161,0.194,0.194,0.226,0.258,0.161,0.161,0.065,0.065,0.065,0.032,0.032,0.0,0.032,0.129,0.129,0.161,0.032,0.065,0.065,0.129,0.097,0.161,0.129,0.138,0.062],"n":1464,"overall":0.109},{"stem":"europlug_1","nm":"europlug","succ":[4,6,18,11,16,11,11,10,10,10,7,5,8,6,10,8,8,6,16,8,8,12,8,14,9,11,7,2,10,10,11,11,13,14,26,29,20,25,18,11],"fail":[33,30,18,25,21,25,25,26,27,26,29,31,29,30,26,28,29,30,20,28,29,24,28,22,28,25,29,34,27,26,25,25,24,22,10,7,17,11,18,25],"rate":[0.062,0.071,0.097,0.194,0.194,0.194,0.355,0.452,0.516,0.355,0.323,0.323,0.387,0.387,0.387,0.419,0.355,0.258,0.29,0.387,0.258,0.323,0.258,0.226,0.258,0.323,0.29,0.355,0.29,0.226,0.258,0.226,0.097,0.065,0.129,0.161,0.129,0.226,0.226,0.194,0.161,0.194,0.226,0.29,0.29,0.226,0.226,0.129,0.226,0.258,0.258,0.129,0.161,0.226,0.516,0.516,0.323,0.226,0.194,0.226,0.258,0.226,0.226,0.226,0.323,0.355,0.323,0.226,0.226,0.387,0.452,0.355,0.29,0.29,0.29,0.258,0.29,0.29,0.258,0.161,0.097,0.032,0.032,0.129,0.226,0.226,0.258,0.258,0.258,0.355,0.387,0.29,0.194,0.29,0.355,0.419,0.387,0.29,0.226,0.452,0.355,0.452,0.677,0.806,0.806,0.839,0.774,0.677,0.516,0.516,0.613,0.806,0.71,0.548,0.516,0.484,0.387,0.355,0.31,0.25],"n":1450,"overall":0.316},{"stem":"schuko_1","nm":"schuko","succ":[2,1,11,1,0,3,0,1,0,0,4,3,1,1,2,3,3,2,2,2,1,3,2,6,6,5,1,1,6,2,1,4,2,0,0,3,6,1,1,1],"fail":[43,43,34,43,45,41,45,43,45,44,41,41,44,43,43,41,42,42,43,42,44,41,43,38,39,39,44,43,39,42,44,40,43,44,45,41,39,43,44,43],"rate":[0.062,0.067,0.032,0.032,0.032,0.0,0.161,0.355,0.194,0.0,0.0,0.032,0.032,0.0,0.0,0.032,0.032,0.065,0.065,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.097,0.129,0.097,0.032,0.065,0.097,0.032,0.0,0.032,0.032,0.032,0.065,0.065,0.032,0.065,0.065,0.097,0.065,0.065,0.032,0.032,0.065,0.065,0.065,0.032,0.032,0.065,0.032,0.032,0.032,0.0,0.0,0.032,0.097,0.097,0.032,0.032,0.065,0.161,0.161,0.097,0.032,0.129,0.226,0.161,0.129,0.097,0.0,0.0,0.032,0.032,0.032,0.032,0.065,0.129,0.194,0.129,0.032,0.0,0.032,0.032,0.032,0.032,0.065,0.129,0.065,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.0,0.065,0.097,0.032,0.0,0.161,0.194,0.065,0.032,0.0,0.0,0.032,0.065,0.032,0.032,0.0],"n":1780,"overall":0.053},{"stem":"schuko_2","nm":"schuko 2","succ":[0,0,1,0,1,0,0,0,1,0,0,2,1,1,0,0,1,1,2,1,0,1,0,0,1,0,0,0,1,0,1,0,1,0,0,0,0,1,0,0],"fail":[47,47,46,46,46,47,46,47,46,46,47,45,45,46,47,46,46,46,44,46,47,45,47,47,45,47,47,46,46,47,45,47,46,46,47,47,46,46,47,46],"rate":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.032,0.065,0.032,0.0,0.032,0.032,0.0,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.032,0.032,0.065,0.065,0.0,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.032,0.032,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.032,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"n":1867,"overall":0.01},{"stem":"gb2099_1","nm":"gb-2099","succ":[17,14,24,24,16,24,21,13,13,10,12,19,12,16,14,23,19,16,16,17,20,16,14,16,17,22,16,18,17,13,12,15,18,20,26,16,27,27,25,13],"fail":[16,18,8,8,16,9,11,19,19,22,20,14,20,16,18,9,13,17,16,15,12,16,19,16,15,10,16,14,16,19,20,17,14,12,7,16,5,5,7,19],"rate":[0.562,0.5,0.516,0.387,0.419,0.419,0.548,0.71,0.839,0.871,0.871,0.645,0.548,0.452,0.581,0.742,0.645,0.71,0.71,0.742,0.548,0.419,0.387,0.387,0.484,0.355,0.387,0.355,0.419,0.323,0.29,0.355,0.387,0.484,0.581,0.548,0.548,0.355,0.419,0.387,0.548,0.484,0.387,0.419,0.452,0.677,0.71,0.774,0.645,0.613,0.548,0.516,0.452,0.516,0.419,0.484,0.581,0.677,0.548,0.484,0.613,0.613,0.516,0.387,0.484,0.516,0.516,0.419,0.516,0.516,0.484,0.419,0.548,0.548,0.548,0.581,0.71,0.613,0.645,0.484,0.419,0.387,0.548,0.613,0.581,0.516,0.452,0.355,0.387,0.355,0.387,0.419,0.516,0.516,0.484,0.516,0.581,0.516,0.419,0.484,0.645,0.774,0.806,0.839,0.742,0.677,0.516,0.581,0.71,0.871,0.806,0.774,0.871,0.903,0.871,0.71,0.613,0.452,0.407,0.312],"n":1287,"overall":0.55},{"stem":"typel_1","nm":"type-l","succ":[6,8,13,17,8,13,3,10,10,9,12,7,8,12,8,17,15,12,8,9,18,34,13,12,6,7,5,4,10,6,4,3,3,4,5,7,10,5,3,6],"fail":[31,29,24,20,29,24,34,27,27,28,25,30,29,25,29,20,22,25,29,28,19,3,24,25,31,30,32,33,27,31,33,34,34,33,32,30,27,32,34,31],"rate":[0.125,0.071,0.194,0.29,0.258,0.194,0.226,0.29,0.29,0.29,0.419,0.516,0.516,0.194,0.194,0.323,0.387,0.323,0.161,0.065,0.065,0.161,0.226,0.355,0.355,0.29,0.258,0.258,0.226,0.29,0.29,0.323,0.194,0.226,0.194,0.226,0.226,0.258,0.29,0.323,0.29,0.226,0.258,0.226,0.161,0.29,0.484,0.548,0.548,0.387,0.29,0.355,0.323,0.258,0.226,0.194,0.194,0.194,0.226,0.355,0.387,0.516,0.677,0.839,0.903,0.806,0.645,0.323,0.29,0.194,0.29,0.323,0.355,0.129,0.065,0.161,0.194,0.161,0.129,0.097,0.097,0.097,0.129,0.129,0.29,0.29,0.258,0.194,0.161,0.129,0.129,0.129,0.097,0.097,0.065,0.065,0.129,0.065,0.097,0.065,0.097,0.129,0.097,0.161,0.161,0.194,0.194,0.194,0.258,0.323,0.129,0.097,0.161,0.065,0.032,0.097,0.194,0.161,0.172,0.188],"n":1480,"overall":0.25},{"stem":"6pointsocket24_1","nm":"6point-socket-24","succ":[1,1,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,2,1,5,6,12,2,1,0,0,0,0,0,0,0,0,1,1,7,4,4],"fail":[39,38,39,37,40,39,40,39,40,39,40,39,40,39,40,39,40,39,39,37,38,38,35,33,28,37,39,39,40,39,40,39,40,39,40,38,39,32,36,35],"rate":[0.0,0.034,0.032,0.0,0.032,0.032,0.0,0.032,0.065,0.065,0.065,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.065,0.065,0.032,0.065,0.065,0.065,0.0,0.032,0.032,0.097,0.097,0.129,0.129,0.129,0.161,0.29,0.387,0.323,0.194,0.097,0.032,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.032,0.032,0.0,0.0,0.032,0.065,0.097,0.194,0.258,0.129,0.065,0.065,0.065,0.133,0.188],"n":1580,"overall":0.034},{"stem":"12pointsocket24_1","nm":"12point-socket-24","succ":[7,7,10,3,8,7,6,3,6,10,4,9,3,9,11,4,6,9,11,12,17,9,9,18,11,16,17,12,7,11,8,4,9,6,7,10,15,12,14,8],"fail":[31,30,28,34,30,30,32,34,32,27,34,28,35,28,27,33,32,28,27,25,21,28,29,19,27,21,21,25,31,26,30,33,29,31,31,27,23,25,24,29],"rate":[0.125,0.143,0.194,0.226,0.161,0.194,0.258,0.258,0.258,0.161,0.097,0.161,0.226,0.226,0.129,0.129,0.161,0.161,0.226,0.161,0.161,0.129,0.097,0.032,0.065,0.129,0.194,0.258,0.226,0.226,0.129,0.129,0.258,0.258,0.226,0.097,0.065,0.097,0.097,0.194,0.226,0.226,0.323,0.355,0.194,0.129,0.129,0.161,0.129,0.161,0.161,0.161,0.161,0.258,0.226,0.226,0.323,0.323,0.387,0.516,0.548,0.484,0.194,0.194,0.226,0.258,0.226,0.161,0.29,0.484,0.516,0.419,0.323,0.29,0.161,0.258,0.484,0.774,0.645,0.387,0.29,0.323,0.355,0.226,0.161,0.194,0.323,0.323,0.226,0.226,0.226,0.258,0.129,0.129,0.097,0.226,0.258,0.194,0.161,0.129,0.129,0.129,0.194,0.194,0.355,0.258,0.258,0.29,0.355,0.323,0.387,0.355,0.323,0.419,0.419,0.355,0.258,0.226,0.276,0.188],"n":1500,"overall":0.243},{"stem":"6pointsocket32_1","nm":"6point-socket-32","succ":[0,1,0,0,0,1,0,2,3,3,0,1,1,4,2,6,1,2,1,0,1,0,0,0,1,1,3,2,4,0,2,0,6,2,2,0,1,0,0,0],"fail":[40,39,40,40,40,39,40,38,37,37,40,39,39,36,38,34,39,38,39,40,39,40,40,40,39,39,37,38,36,40,38,40,34,38,38,40,39,40,40,40],"rate":[0.0,0.0,0.0,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.032,0.032,0.032,0.032,0.032,0.129,0.161,0.097,0.032,0.032,0.0,0.0,0.0,0.0,0.065,0.065,0.032,0.032,0.065,0.129,0.097,0.0,0.065,0.161,0.226,0.161,0.065,0.032,0.032,0.032,0.032,0.032,0.032,0.0,0.032,0.032,0.032,0.0,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.032,0.032,0.065,0.032,0.032,0.065,0.065,0.065,0.065,0.065,0.129,0.097,0.065,0.032,0.0,0.0,0.032,0.032,0.032,0.032,0.032,0.0,0.032,0.065,0.194,0.194,0.097,0.0,0.0,0.065,0.065,0.0,0.0,0.0,0.0,0.032,0.032,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"n":1600,"overall":0.033},{"stem":"12pointsocket36_1","nm":"12point-socket-36","succ":[18,17,17,19,16,12,10,11,3,12,18,16,19,9,12,13,18,10,8,9,8,17,18,10,13,11,8,8,16,8,8,9,29,11,13,12,14,18,11,8],"fail":[19,20,20,18,21,25,27,26,34,25,19,21,18,28,25,24,19,27,29,28,29,20,19,27,24,26,29,29,21,29,29,28,8,26,24,25,23,19,26,28],"rate":[0.312,0.393,0.484,0.613,0.419,0.484,0.452,0.516,0.419,0.387,0.419,0.613,0.581,0.452,0.258,0.226,0.419,0.452,0.387,0.258,0.226,0.258,0.258,0.355,0.194,0.097,0.226,0.29,0.355,0.226,0.387,0.581,0.548,0.548,0.484,0.355,0.29,0.548,0.484,0.355,0.258,0.258,0.258,0.29,0.323,0.323,0.29,0.419,0.548,0.419,0.613,0.484,0.29,0.161,0.129,0.161,0.161,0.226,0.29,0.29,0.129,0.258,0.355,0.355,0.484,0.452,0.484,0.516,0.452,0.387,0.29,0.355,0.323,0.323,0.323,0.355,0.29,0.29,0.258,0.194,0.129,0.29,0.258,0.387,0.355,0.419,0.387,0.258,0.161,0.194,0.226,0.226,0.258,0.194,0.226,0.452,0.71,0.839,0.548,0.29,0.323,0.29,0.387,0.355,0.29,0.258,0.323,0.323,0.323,0.419,0.419,0.484,0.516,0.355,0.323,0.29,0.387,0.194,0.103,0.125],"n":1479,"overall":0.35},{"stem":"6pointsocket41_1","nm":"6point-socket-41","succ":[17,23,15,25,33,14,21,13,13,9,19,11,13,14,17,15,9,8,12,13,18,24,17,16,18,13,19,16,19,12,14,12,15,13,5,10,9,18,19,20],"fail":[20,14,21,12,4,22,16,23,24,28,17,26,24,22,20,21,28,29,24,24,19,12,20,20,19,24,17,21,18,24,23,24,22,24,31,27,28,18,18,16],"rate":[0.5,0.393,0.516,0.548,0.645,0.548,0.516,0.387,0.387,0.548,0.677,0.742,0.806,0.871,0.903,0.71,0.452,0.258,0.387,0.613,0.548,0.387,0.355,0.323,0.355,0.355,0.387,0.323,0.29,0.29,0.387,0.452,0.419,0.419,0.323,0.355,0.387,0.355,0.355,0.355,0.452,0.323,0.387,0.419,0.419,0.355,0.452,0.452,0.323,0.194,0.129,0.129,0.194,0.323,0.323,0.355,0.355,0.258,0.387,0.323,0.484,0.484,0.613,0.548,0.613,0.774,0.645,0.419,0.452,0.419,0.452,0.452,0.452,0.452,0.419,0.452,0.355,0.484,0.613,0.581,0.516,0.387,0.387,0.387,0.613,0.484,0.419,0.323,0.387,0.387,0.419,0.387,0.355,0.387,0.355,0.323,0.419,0.452,0.484,0.258,0.355,0.29,0.226,0.161,0.194,0.226,0.258,0.226,0.29,0.226,0.258,0.355,0.516,0.516,0.548,0.484,0.484,0.516,0.586,0.562],"n":1465,"overall":0.424},{"stem":"usba_1","nm":"usb-a","succ":[9,15,12,21,16,12,19,8,6,9,14,9,8,3,8,9,3,7,11,11,6,3,4,16,18,14,20,7,5,13,14,30,18,16,19,34,12,8,5,8],"fail":[29,22,26,16,21,26,18,29,32,28,24,28,29,35,29,28,35,30,27,26,31,35,33,21,20,23,18,30,32,25,23,7,20,21,19,3,25,30,32,29],"rate":[0.25,0.321,0.323,0.258,0.29,0.387,0.419,0.387,0.258,0.323,0.484,0.613,0.516,0.419,0.548,0.516,0.419,0.194,0.29,0.516,0.581,0.323,0.226,0.194,0.161,0.097,0.226,0.29,0.258,0.29,0.29,0.323,0.323,0.323,0.29,0.258,0.258,0.226,0.129,0.065,0.065,0.129,0.194,0.258,0.194,0.258,0.29,0.194,0.032,0.032,0.065,0.129,0.129,0.323,0.387,0.323,0.226,0.226,0.323,0.258,0.194,0.194,0.194,0.129,0.032,0.065,0.065,0.129,0.129,0.258,0.355,0.516,0.516,0.516,0.484,0.387,0.355,0.323,0.452,0.581,0.548,0.323,0.161,0.097,0.065,0.129,0.29,0.387,0.387,0.355,0.323,0.355,0.484,0.613,0.806,0.806,0.645,0.419,0.452,0.419,0.419,0.419,0.419,0.516,0.71,0.903,0.935,0.71,0.484,0.323,0.194,0.258,0.194,0.161,0.097,0.129,0.194,0.194,0.207,0.188],"n":1495,"overall":0.321},{"stem":"usbc_1","nm":"usb-c","succ":[1,3,2,5,7,5,2,2,3,5,3,2,0,1,1,3,4,3,2,1,2,1,1,3,4,8,13,9,5,6,6,6,13,11,7,16,8,5,4,4],"fail":[36,33,35,31,30,31,35,34,34,31,34,34,37,35,36,33,33,33,35,35,35,35,36,33,33,28,24,27,32,30,31,30,24,25,30,20,29,31,33,32],"rate":[0.062,0.036,0.032,0.065,0.097,0.065,0.065,0.032,0.097,0.097,0.161,0.129,0.161,0.161,0.194,0.194,0.194,0.129,0.0,0.032,0.065,0.065,0.032,0.065,0.161,0.097,0.129,0.097,0.097,0.097,0.129,0.097,0.065,0.065,0.032,0.065,0.032,0.0,0.0,0.032,0.032,0.032,0.0,0.032,0.032,0.032,0.097,0.065,0.065,0.129,0.097,0.097,0.097,0.097,0.097,0.065,0.032,0.032,0.032,0.032,0.032,0.032,0.032,0.032,0.032,0.032,0.032,0.032,0.032,0.032,0.065,0.161,0.129,0.065,0.065,0.129,0.226,0.29,0.355,0.387,0.355,0.258,0.29,0.161,0.129,0.129,0.226,0.258,0.161,0.129,0.194,0.161,0.097,0.161,0.194,0.258,0.29,0.323,0.161,0.29,0.355,0.355,0.226,0.194,0.258,0.355,0.484,0.419,0.226,0.161,0.258,0.226,0.129,0.097,0.097,0.097,0.129,0.097,0.103,0.062],"n":1460,"overall":0.128}];
+(function(){
+  const host=document.getElementById("hilbertFig");
+  if(!host)return;
+  const NSU="http://www.w3.org/2000/svg";
+  const el=(t,a={})=>{const n=document.createElementNS(NSU,t);
+    for(const k in a)n.setAttribute(k,a[k]);return n};
+
+  const N=HILBERT_REAL.length, COLS=4, ROWS=Math.ceil(N/COLS);
+  const PW=300, PH=150, GX=26, GY=54, PADL=120, PADT=22, PADB=44;
+  const W=PADL+COLS*PW+(COLS-1)*GX+20, H=PADT+ROWS*(PH+GY)+PADB;
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,width:"100%",role:"img",
+    "aria-label":"Per-object success structure along a Hilbert curve"});
+  svg.style.display="block";svg.style.fontFamily="'Helvetica Neue',Helvetica,Arial,sans-serif";
+
+  HILBERT_REAL.forEach((o,i)=>{
+    const BINS=o.succ.length;
+    const r=i%COLS, c2=Math.floor(i/COLS);
+    const x0=PADL+r*(PW+GX), y0=PADT+c2*(PH+GY);
+    const px=v=>x0+v*PW, py=v=>y0+PH-((v+5)/110)*PH;   /* y axis -5..105 */
+
+    [0,50,100].forEach(g=>{
+      svg.appendChild(el("line",{x1:x0,y1:py(g),x2:x0+PW,y2:py(g),
+        stroke:(g===50?"#E6EAEE":"#EEF1F4"),"stroke-width":0.8,
+        ...(g===50?{"stroke-dasharray":"3 3"}:{})}));
+      if(r===0){const tx=el("text",{x:x0-10,y:py(g)+4,"text-anchor":"end",
+        "font-size":13,fill:"#33404E"});tx.textContent=g;svg.appendChild(tx);}
+    });
+
+    /* SHARED max across success+failure; tallest bar -> 20% of panel (as in script) */
+    const bw=PW/BINS;
+    const shared=Math.max(1,...o.succ,...o.fail);
+    const scale=20/shared;                       /* percent-of-axis per count */
+    for(let b=0;b<BINS;b++){
+      const bx=x0+b*bw;
+      const sPct=o.succ[b]*scale, fPct=o.fail[b]*scale;   /* in axis-% (0..100) */
+      if(sPct>0.15)svg.appendChild(el("rect",{x:bx+bw*0.08,y:py(100),
+        width:bw*0.84,height:(sPct/110)*PH,fill:"#1D9E75","fill-opacity":0.6}));
+      if(fPct>0.15)svg.appendChild(el("rect",{x:bx+bw*0.08,y:py(0)-(fPct/110)*PH,
+        width:bw*0.84,height:(fPct/110)*PH,fill:"#D85A30","fill-opacity":0.55}));
+    }
+
+    /* local success-rate line at stored (higher) resolution */
+    const RP=o.rate.length;
+    let d="";for(let j=0;j<RP;j++){const t=RP>1?j/(RP-1):0;
+      d+=(j?"L":"M")+px(t).toFixed(1)+" "+py(o.rate[j]*100).toFixed(1);}
+    svg.appendChild(el("path",{d,fill:"none",stroke:"#378ADD","stroke-width":1.5,
+      "stroke-opacity":0.85}));
+
+    const tt=el("text",{x:x0+PW/2,y:y0-7,"text-anchor":"middle","font-size":16,
+      "font-weight":700,fill:"#10151C"});tt.textContent=o.nm;svg.appendChild(tt);
+
+    if(i>=N-COLS){
+      const xl=el("text",{x:x0+PW/2,y:y0+PH+28,"text-anchor":"middle","font-size":12,
+        fill:"#5B6B7C"});xl.textContent="\u2190 similar \u2014 different \u2192";svg.appendChild(xl);
+    }
+  });
+
+  const yc=PADT+ROWS*(PH+GY)/2;
+  const yl=el("text",{x:22,y:yc,"text-anchor":"middle","font-size":15,fill:"#33404E",
+    transform:`rotate(-90 22 ${yc})`});
+  yl.textContent="Success Rate [%]";svg.appendChild(yl);
+
+  host.appendChild(svg);
+})();
+
+
+
+</script>
+</body>
+</html>
