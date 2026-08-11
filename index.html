@@ -1748,7 +1748,7 @@ if(f2svg){
     const alg=f2alg.value, dom=f2dom.value, lvls=F2_LV[dom], sc=F2_SCALE[dom][alg];
     /* x limits -0.03..1.03 of full scale (-3%..103%) so points at 0 and 100 are
        not glued to the spines, matching the figure's margins */
-    const W=1080,H=680,L=128,R=34,T=64,B=104, XMIN=-3, XMAX=103, YMAX=3.25;
+    const W=1080,H=680,L=128,R=34,T=64,B=104, XMIN=-3, XMAX=103, YMAX=3.50;
     const px=v=>L+((v-XMIN)/(XMAX-XMIN))*(W-L-R), py=v=>H-B-(v/YMAX)*(H-B-T);
     const kx=(W-L-R)/(XMAX-XMIN), ky=-(H-B-T)/YMAX;
     f2svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
