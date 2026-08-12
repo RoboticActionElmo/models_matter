@@ -1793,7 +1793,7 @@ if(f2svg){
     if(F2_VIEW==="dist"){
       series.forEach(S=>{
         if(F2_OFF.has(S.key))return;
-        const ep=distEllipse(S.xs,S.ys,px,py,2.0,0.03,kx);
+        const ep=distEllipse(S.xs,S.ys,px,py,1.0,0.03,kx);
         if(!ep)return;
         const g=el("g",{transform:`translate(${ep.cx.toFixed(2)} ${ep.cy.toFixed(2)}) rotate(${ep.deg.toFixed(2)})`});
         /* face: line colour at 0.05 (from .ell-face). outline: coloured stroke, NO fill
